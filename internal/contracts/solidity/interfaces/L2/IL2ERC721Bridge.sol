@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import {IERC721Bridge} from "../universal/IERC721Bridge.sol";
+
+interface IL2ERC721Bridge is IERC721Bridge {
+    function finalizeBridgeERC721(
+        address _localToken,
+        address _remoteToken,
+        address _from,
+        address _to,
+        uint256 _tokenId,
+        bytes memory _extraData
+    )
+        external;
+    function version() external view returns (string memory);
+}

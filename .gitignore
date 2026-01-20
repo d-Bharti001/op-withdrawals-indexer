@@ -1,0 +1,9 @@
+.env
+.envrc
+
+.DS_Store
+
+go.sum
+
+bin/
+build/
