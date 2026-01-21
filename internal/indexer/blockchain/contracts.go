@@ -1,36 +1,45 @@
 package blockchain
 
 import (
-	"github.com/ethereum/go-ethereum/accounts/abi/bind/v2"
+	"op-withdrawals-indexer/internal/contracts/predeploys"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
-// TODO: delete this
-// var (
-// 	L2ToL1MessagePasserAddr    common.Address = common.HexToAddress("0x4200000000000000000000000000000000000016")
-// 	L2CrossDomainMessengerAddr common.Address = common.HexToAddress("0x4200000000000000000000000000000000000007")
-// 	L2StandardBridgeAddr       common.Address = common.HexToAddress("0x4200000000000000000000000000000000000010")
-// 	L2ERC721BridgeAddr         common.Address = common.HexToAddress("0x4200000000000000000000000000000000000014")
-// )
-
-type L2Contracts struct {
-	L2ToL1MessagePasser    *bind.BoundContract
-	L2CrossDomainMessenger *bind.BoundContract
-	L2StandardBridge       *bind.BoundContract
-	L2ERC721Bridge         *bind.BoundContract
+type L1ContractAddresses struct {
+	optimismPortalAddr         common.Address
+	l1CrossDomainMessengerAddr common.Address
+	l1StandardBridgeAddr       common.Address
+	l1ERC721BridgeAddr         common.Address
 }
 
-type L1Contracts struct {
-	OptimismPortal         *bind.BoundContract
-	L1CrossDomainMessenger *bind.BoundContract
-	L1StandardBridge       *bind.BoundContract
-	L1ERC721Bridge         *bind.BoundContract
+func (contracts *L1ContractAddresses) OptimismPortalAddr() common.Address {
+	return contracts.optimismPortalAddr
+}
+func (contracts *L1ContractAddresses) L1CrossDomainMessengerAddr() common.Address {
+	return contracts.l1CrossDomainMessengerAddr
+}
+func (contracts *L1ContractAddresses) L1StandardBridgeAddr() common.Address {
+	return contracts.l1StandardBridgeAddr
+}
+func (contracts *L1ContractAddresses) L1ERC721BridgeAddr() common.Address {
+	return contracts.l1ERC721BridgeAddr
 }
 
-// TODO: delete this
-// type L1ContractAddresses struct {
-// 	SystemConfigAddr           common.Address
-// 	OptimismPortalAddr         common.Address
-// 	L1CrossDomainMessengerAddr common.Address
-// 	L1StandardBridgeAddr       common.Address
-// 	L1ERC721BridgeAddr         common.Address
-// }
+type L2ContractAddresses struct{}
+
+func (L2ContractAddresses) L2ToL1MessagePasserAddr() common.Address {
+	return predeploys.L2ToL1MessagePasserAddr
+}
+
+func (L2ContractAddresses) L2CrossDomainMessengerAddr() common.Address {
+	return predeploys.L2CrossDomainMessengerAddr
+}
+
+func (L2ContractAddresses) L2StandardBridgeAddr() common.Address {
+	return predeploys.L2StandardBridgeAddr
+}
+
+func (L2ContractAddresses) L2ERC721BridgeAddr() common.Address {
+	return predeploys.L2ERC721BridgeAddr
+}
