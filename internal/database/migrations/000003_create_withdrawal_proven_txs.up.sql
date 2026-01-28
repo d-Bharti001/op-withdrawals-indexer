@@ -17,5 +17,5 @@ CREATE TABLE IF NOT EXISTS withdrawal_proven_txs (
         REFERENCES withdrawals (chain_id, withdrawal_hash),
 
     CONSTRAINT unique_withdrawal_proven
-        UNIQUE (withdrawal_chain_id, withdrawal_hash, proof_submitter, tx_hash)
+        UNIQUE (withdrawal_chain_id, withdrawal_hash, tx_chain_id, tx_hash, proof_submitter)
 );

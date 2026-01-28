@@ -3,10 +3,7 @@ package dbstore
 import (
 	"database/sql"
 	"op-withdrawals-indexer/internal/database/postgresql"
-	"time"
 )
-
-const DBQueryTimeout = 3 * time.Second
 
 type PostgresStore struct {
 	db *sql.DB
