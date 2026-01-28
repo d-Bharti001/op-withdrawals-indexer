@@ -2,7 +2,10 @@ module op-withdrawals-indexer
 
 go 1.24.5
 
-require github.com/ethereum/go-ethereum v1.16.8
+require (
+	github.com/ethereum/go-ethereum v1.16.8
+	github.com/jackc/pgtype v1.14.4
+)
 
 require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
@@ -20,6 +23,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/holiman/uint256 v1.3.2 // indirect
+	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/supranational/blst v0.3.16-0.20250831170142-f48500c1fdbe // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20220614013038-64ee5596c38a // indirect
