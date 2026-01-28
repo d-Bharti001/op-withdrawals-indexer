@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS withdrawal_info (
     withdrawal_hash CHAR(66) NOT NULL,
     chain_id BIGINT NOT NULL,
 
-    decoded_action VARCHAR(100),
+    decoded_action VARCHAR(100) NOT NULL DEFAULT '',
 
     token_address CHAR(42),
     from_address CHAR(42) CHECK (from_address = LOWER(from_address)),
