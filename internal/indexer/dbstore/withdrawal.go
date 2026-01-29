@@ -4,64 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
+
 	"op-withdrawals-indexer/internal/database/models"
 
 	"github.com/ethereum/go-ethereum/common"
 )
-
-func (s *PostgresStore) GetWithdrawal(ctx context.Context, chainID uint64, withdrawalHash common.Hash) (*models.Withdrawal, error) {
-	query := `
-		SELECT
-			withdrawal_hash,
-			chain_id,
-			withdrawal_sender,
-			withdrawal_target,
-			withdrawal_data,
-			withdrawal_value,
-			tx_hash,
-			tx_caller,
-			block_number,
-			block_hash,
-			block_timestamp
-		FROM
-			withdrawals
-		WHERE
-			chain_id = $1 AND withdrawal_hash = $2;
-	`
-
-	ctx, cancel := context.WithTimeout(ctx, DBQueryTimeout)
-	defer cancel()
-
-	var withdrawalRow models.WithdrawalDBRow
-
-	err := s.db.QueryRowContext(
-		ctx,
-		query,
-		chainID,
-		withdrawalHash,
-	).Scan(
-		&withdrawalRow.Hash,
-		&withdrawalRow.ChainID,
-		&withdrawalRow.Sender,
-		&withdrawalRow.Target,
-		&withdrawalRow.Data,
-		&withdrawalRow.Value,
-		&withdrawalRow.TxHash,
-		&withdrawalRow.TxCaller,
-		&withdrawalRow.BlockNumber,
-		&withdrawalRow.BlockHash,
-		&withdrawalRow.BlockTimestamp,
-	)
-
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrNotFound
-		}
-		return nil, err
-	}
-
-	return withdrawalRow.ToDomainModel(), nil
-}
 
 func (s *PostgresStore) SaveWithdrawal(ctx context.Context, withdrawal *models.Withdrawal) error {
 	query := `
@@ -116,4 +64,58 @@ func (s *PostgresStore) SaveWithdrawal(ctx context.Context, withdrawal *models.W
 	)
 
 	return err
+}
+
+func (s *PostgresStore) GetWithdrawal(ctx context.Context, chainID uint64, withdrawalHash common.Hash) (*models.Withdrawal, error) {
+	query := `
+		SELECT
+			withdrawal_hash,
+			chain_id,
+			withdrawal_sender,
+			withdrawal_target,
+			withdrawal_data,
+			withdrawal_value,
+			tx_hash,
+			tx_caller,
+			block_number,
+			block_hash,
+			block_timestamp
+		FROM
+			withdrawals
+		WHERE
+			chain_id = $1 AND withdrawal_hash = $2;
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, DBQueryTimeout)
+	defer cancel()
+
+	var withdrawalRow models.WithdrawalDBRow
+
+	err := s.db.QueryRowContext(
+		ctx,
+		query,
+		chainID,
+		strings.ToLower(withdrawalHash.Hex()),
+	).Scan(
+		&withdrawalRow.Hash,
+		&withdrawalRow.ChainID,
+		&withdrawalRow.Sender,
+		&withdrawalRow.Target,
+		&withdrawalRow.Data,
+		&withdrawalRow.Value,
+		&withdrawalRow.TxHash,
+		&withdrawalRow.TxCaller,
+		&withdrawalRow.BlockNumber,
+		&withdrawalRow.BlockHash,
+		&withdrawalRow.BlockTimestamp,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	return withdrawalRow.ToDomainModel(), nil
 }
