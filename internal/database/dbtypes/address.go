@@ -42,7 +42,7 @@ func (a *Address) Scan(value any) error {
 // Value implements the database/sql/driver Valuer interface
 func (a Address) Value() (driver.Value, error) {
 	addr := common.Address(a)
-	return addr.Hex(), nil
+	return strings.ToLower(addr.Hex()), nil
 }
 
 func (a Address) Common() common.Address {
@@ -79,7 +79,7 @@ func (a *NullableAddress) Value() (driver.Value, error) {
 	if a.Val == nil {
 		return nil, nil
 	}
-	return a.Val.Hex(), nil
+	return strings.ToLower(a.Val.Hex()), nil
 }
 
 func (a *NullableAddress) Common() *common.Address {
