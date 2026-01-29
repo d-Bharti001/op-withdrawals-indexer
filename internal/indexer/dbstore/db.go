@@ -9,8 +9,8 @@ type PostgresStore struct {
 	db *sql.DB
 }
 
-func NewPostgresStore(addr string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*PostgresStore, error) {
-	postgresDb, err := postgresql.New(addr, maxOpenConns, maxIdleConns, maxIdleTime)
+func NewPostgresStore(connStr string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*PostgresStore, error) {
+	postgresDb, err := postgresql.New(connStr, maxOpenConns, maxIdleConns, maxIdleTime)
 	if err != nil {
 		return nil, err
 	}

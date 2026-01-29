@@ -11,16 +11,17 @@ type IndexerInitConfig struct {
 	L1RPCUrl                 string
 	L1ChainID                uint64
 	L1ChainName              string
-	L1BlockConfirmationDepth *uint64
+	L1BlockConfirmationDepth uint64
 
 	L2RPCUrl                 string
 	L2ChainID                uint64
 	L2ChainName              string
-	L2BlockConfirmationDepth *uint64
+	L2BlockConfirmationDepth uint64
 
 	SystemConfigAddr string
 
-	// TODO: postgresql and redis
-	DBConn       string
-	MemCacheConn string
+	DBConnStr     string
+	DBMaxOpenConn int
+	DBMaxIdleConn int
+	DBMaxIdleTime string
 }

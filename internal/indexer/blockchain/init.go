@@ -25,16 +25,12 @@ func NewL1Chain(ctx context.Context, cfg L1ChainInitConfig) (*L1Chain, error) {
 		return nil, err
 	}
 
-	if cfg.BlockConfirmationDepth == nil {
-		cfg.BlockConfirmationDepth = &DefaultL1ChainBlockConfDepth
-	}
-
 	l1Chain := L1Chain{
 		Chain: Chain{
 			id:                     l1ChainId,
 			name:                   cfg.Name,
 			rpcClient:              l1Client,
-			blockConfirmationDepth: *cfg.BlockConfirmationDepth,
+			blockConfirmationDepth: cfg.BlockConfirmationDepth,
 		},
 		iOptimismPortal2: bindings.NewIOptimismPortal2(),
 	}
@@ -134,16 +130,12 @@ func NewL2Chain(ctx context.Context, cfg L2ChainInitConfig) (*L2Chain, error) {
 		return nil, err
 	}
 
-	if cfg.BlockConfirmationDepth == nil {
-		cfg.BlockConfirmationDepth = &DefaultL2ChainBlockConfDepth
-	}
-
 	l2Chain := L2Chain{
 		Chain: Chain{
 			id:                     l2ChainId,
 			name:                   cfg.Name,
 			rpcClient:              l2Client,
-			blockConfirmationDepth: *cfg.BlockConfirmationDepth,
+			blockConfirmationDepth: cfg.BlockConfirmationDepth,
 		},
 		LinkedL1Details: LinkedL1Details{
 			l1ChainId:          l1ChainId,

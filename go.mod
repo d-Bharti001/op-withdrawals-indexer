@@ -5,6 +5,7 @@ go 1.24.5
 require (
 	github.com/ethereum/go-ethereum v1.16.8
 	github.com/jackc/pgtype v1.14.4
+	github.com/urfave/cli/v3 v3.6.2
 )
 
 require (

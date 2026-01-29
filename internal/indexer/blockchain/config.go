@@ -14,7 +14,7 @@ type ChainInitConfig struct {
 	ID                     uint64
 	Name                   string
 	RPCUrl                 string
-	BlockConfirmationDepth *uint64
+	BlockConfirmationDepth uint64
 }
 
 type L1ChainInitConfig struct {

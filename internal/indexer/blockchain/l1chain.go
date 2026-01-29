@@ -16,7 +16,6 @@ type L1Chain struct {
 	iOptimismPortal2 *bindings.IOptimismPortal2
 }
 
-// TODO: implement this
 func (c *L1Chain) PortalWithdrawalLogs(ctx context.Context, portalAddrs []common.Address, fromBlock, toBlock uint64) ([]OptimismPortalRelevantWithdrawalEvent, error) {
 	query := ethereum.FilterQuery{
 		FromBlock: new(big.Int).SetUint64(fromBlock),

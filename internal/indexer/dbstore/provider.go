@@ -8,7 +8,11 @@ import (
 )
 
 type DBStoreProvider interface {
-	SaveChain(context.Context, *models.Chain) error
+	// SaveL1Chain should not update source_chain_id
+	SaveL1Chain(context.Context, *models.Chain) error
+
+	// SaveL2Chain should update source_chain_id if the stored value is different
+	SaveL2Chain(context.Context, *models.Chain) error
 
 	GetWithdrawal(ctx context.Context, chainID uint64, withdrawalHash common.Hash) (*models.Withdrawal, error)
 	SaveWithdrawal(context.Context, *models.Withdrawal) error
