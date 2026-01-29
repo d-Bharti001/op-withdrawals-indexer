@@ -12,6 +12,7 @@ type ChainProvider interface {
 	Name() string
 	LatestBlockNumber(ctx context.Context) (uint64, error)
 	BlockConfirmationDepth() uint64
+	CloseConnection()
 }
 
 type L2ContractsProvider interface {

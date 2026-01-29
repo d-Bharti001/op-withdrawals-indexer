@@ -27,5 +27,14 @@ func appAction(ctx context.Context, cmd *cli.Command) error {
 	if err != nil {
 		return err
 	}
-	return app.Start()
+
+	defer app.Stop()
+
+	if err := app.Start(); err != nil {
+		return err
+	}
+
+	<-ctx.Done()
+
+	return nil
 }

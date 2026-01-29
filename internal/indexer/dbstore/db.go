@@ -19,3 +19,7 @@ func NewPostgresStore(connStr string, maxOpenConns, maxIdleConns int, maxIdleTim
 		db: postgresDb,
 	}, nil
 }
+
+func (s *PostgresStore) CloseConnection() error {
+	return s.db.Close()
+}

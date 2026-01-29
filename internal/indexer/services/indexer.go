@@ -2,7 +2,9 @@ package indexer
 
 import (
 	"context"
-	"time"
+	"fmt"
+	"log"
+	"sync"
 
 	"op-withdrawals-indexer/internal/database/models"
 	"op-withdrawals-indexer/internal/indexer/blockchain"
@@ -10,18 +12,22 @@ import (
 )
 
 type IndexerApp struct {
-	globalCtx context.Context
+	ctx    context.Context
+	cancel context.CancelFunc
+
+	wg sync.WaitGroup
+
+	stopOnce sync.Once
+
+	l1Scanner L1Scanner
+	l2Scanner L2Scanner
 
 	dbProvider dbstore.DBStoreProvider
-
-	l1Provider blockchain.L1ChainProvider
-	l2Provider blockchain.L2ChainProvider
-
-	l1PollingInterval time.Duration
-	l2PollingInterval time.Duration
 }
 
 func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error) {
+	ctx, cancel := context.WithCancel(ctx)
+
 	l1Chain, err := blockchain.NewL1Chain(ctx, blockchain.L1ChainInitConfig{
 		ChainInitConfig: blockchain.ChainInitConfig{
 			ID:                     cfg.L1ChainID,
@@ -31,6 +37,7 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 		},
 	})
 	if err != nil {
+		cancel()
 		return nil, err
 	}
 
@@ -46,6 +53,8 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 		SystemConfigAddr: cfg.SystemConfigAddr,
 	})
 	if err != nil {
+		cancel()
+		l1Chain.CloseConnection()
 		return nil, err
 	}
 
@@ -56,53 +65,105 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 		cfg.DBMaxIdleTime,
 	)
 	if err != nil {
+		cancel()
+		l1Chain.CloseConnection()
+		l2Chain.CloseConnection()
 		return nil, err
 	}
 
 	indexer := IndexerApp{
-		globalCtx:         ctx,
-		dbProvider:        db,
-		l1Provider:        l1Chain,
-		l2Provider:        l2Chain,
-		l1PollingInterval: DefaultL1PollingInterval,
-		l2PollingInterval: DefaultL2PollingInterval,
+		ctx:        ctx,
+		cancel:     cancel,
+		dbProvider: db,
+		l1Scanner: L1Scanner{
+			l1Provider:                l1Chain,
+			pollingInterval:           DefaultL1PollingInterval,
+			chainIndexerStateTableKey: fmt.Sprintf("%d:%d", cfg.L2ChainID, cfg.L1ChainID),
+		},
+		l2Scanner: L2Scanner{
+			l2Provider:                l2Chain,
+			pollingInterval:           DefaultL2PollingInterval,
+			chainIndexerStateTableKey: fmt.Sprintf("%d", cfg.L2ChainID),
+		},
 	}
 
 	return &indexer, nil
 }
 
 func (app *IndexerApp) Start() error {
+
+	// Save chains into database
+
 	if err := app.dbProvider.SaveL1Chain(
-		app.globalCtx,
+		app.ctx,
 		&models.Chain{
-			ID:            app.l1Provider.ID(),
-			Name:          app.l1Provider.Name(),
+			ID:            app.l1Scanner.l1Provider.ID(),
+			Name:          app.l1Scanner.l1Provider.Name(),
 			SourceChainID: nil,
 		},
 	); err != nil {
 		return err
 	}
 
-	l2SourceChainID := app.l2Provider.L1ChainID()
+	l2SourceChainID := app.l2Scanner.l2Provider.L1ChainID()
 
 	if err := app.dbProvider.SaveL2Chain(
-		app.globalCtx,
+		app.ctx,
 		&models.Chain{
-			ID:            app.l2Provider.ID(),
-			Name:          app.l2Provider.Name(),
+			ID:            app.l2Scanner.l2Provider.ID(),
+			Name:          app.l2Scanner.l2Provider.Name(),
 			SourceChainID: &l2SourceChainID,
 		},
 	); err != nil {
 		return err
 	}
 
-	if err := app.StartL1Scan(); err != nil {
-		return err
-	}
+	// Start scanners
 
-	if err := app.StartL2Scan(); err != nil {
-		return err
-	}
+	app.wg.Add(1)
+	go app.l1Scanner.Start(app.ctx, &app.wg, app.dbProvider)
+
+	app.wg.Add(1)
+	go app.l2Scanner.Start(app.ctx, &app.wg, app.dbProvider)
 
 	return nil
+}
+
+func (app *IndexerApp) Stop() {
+	app.stopOnce.Do(func() {
+		log.Println("Stopping indexer...")
+
+		ctx, cancel := context.WithTimeout(context.Background(), ShutdownTimeout)
+		defer cancel()
+
+		// Signal shutdown
+		if app.cancel != nil {
+			app.cancel()
+		}
+
+		log.Println("Stopping scanner services...")
+
+		// Wait for scanners or timeout
+		done := make(chan struct{})
+
+		go func() {
+			app.wg.Wait()
+			close(done)
+		}()
+
+		select {
+		case <-done:
+			log.Println("Scanners stopped cleanly")
+		case <-ctx.Done():
+			log.Println("Shutdown timeout exceeded:", ctx.Err())
+		}
+
+		log.Println("Closing connections...")
+
+		app.l1Scanner.l1Provider.CloseConnection()
+		app.l2Scanner.l2Provider.CloseConnection()
+		app.dbProvider.CloseConnection()
+
+		log.Println("Indexer stopped.")
+	})
 }

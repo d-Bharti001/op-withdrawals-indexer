@@ -31,4 +31,6 @@ type DBStoreProvider interface {
 
 	SaveChainLatestSyncedBlockNumber(ctx context.Context, chainKey string, blockNumber uint64) error
 	GetChainLatestSyncedBlockNumber(ctx context.Context, chainKey string) (blockNumber uint64, err error)
+
+	CloseConnection() error
 }

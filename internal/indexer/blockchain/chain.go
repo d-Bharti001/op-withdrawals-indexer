@@ -28,3 +28,7 @@ func (c *Chain) BlockConfirmationDepth() uint64 {
 func (c *Chain) LatestBlockNumber(ctx context.Context) (uint64, error) {
 	return c.rpcClient.BlockNumber(ctx)
 }
+
+func (c *Chain) CloseConnection() {
+	c.rpcClient.Close()
+}
