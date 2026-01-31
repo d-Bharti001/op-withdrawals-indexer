@@ -18,11 +18,10 @@ type Withdrawal struct {
 	Data   hexutil.Bytes  `json:"withdrawal_data"`
 	Value  *big.Int       `json:"withdrawal_value"`
 
-	TxHash         common.Hash    `json:"tx_hash"`
-	TxCaller       common.Address `json:"tx_caller"`
-	BlockNumber    uint64         `json:"block_number"`
-	BlockHash      common.Hash    `json:"block_hash"`
-	BlockTimestamp uint64         `json:"block_timestamp"`
+	TxHash         common.Hash `json:"tx_hash"`
+	BlockNumber    uint64      `json:"block_number"`
+	BlockHash      common.Hash `json:"block_hash"`
+	BlockTimestamp uint64      `json:"block_timestamp"`
 }
 
 // Database specific model
@@ -36,7 +35,6 @@ type WithdrawalDBRow struct {
 	Value  dbtypes.U256
 
 	TxHash         dbtypes.Hash
-	TxCaller       dbtypes.Address
 	BlockNumber    uint64
 	BlockHash      dbtypes.Hash
 	BlockTimestamp uint64
@@ -51,7 +49,6 @@ func (m *Withdrawal) ToDBRow() *WithdrawalDBRow {
 		Data:           dbtypes.Bytes(m.Data),
 		Value:          dbtypes.NewU256(m.Value),
 		TxHash:         dbtypes.Hash(m.TxHash),
-		TxCaller:       dbtypes.Address(m.TxCaller),
 		BlockNumber:    m.BlockNumber,
 		BlockHash:      dbtypes.Hash(m.BlockHash),
 		BlockTimestamp: m.BlockTimestamp,
@@ -67,7 +64,6 @@ func (r *WithdrawalDBRow) ToDomainModel() *Withdrawal {
 		Data:           r.Data.HexUtilBytes(),
 		Value:          r.Value.BigInt(),
 		TxHash:         r.TxHash.Common(),
-		TxCaller:       r.TxCaller.Common(),
 		BlockNumber:    r.BlockNumber,
 		BlockHash:      r.BlockHash.Common(),
 		BlockTimestamp: r.BlockTimestamp,

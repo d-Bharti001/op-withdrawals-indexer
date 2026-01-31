@@ -13,12 +13,11 @@ type WithdrawalProvenTx struct {
 
 	ProofSubmitter common.Address `json:"proof_submitter"`
 
-	TxHash         common.Hash    `json:"tx_hash"`
-	TxChainID      uint64         `json:"tx_chain_id"`
-	TxCaller       common.Address `json:"tx_caller"`
-	BlockNumber    uint64         `json:"block_number"`
-	BlockHash      common.Hash    `json:"block_hash"`
-	BlockTimestamp uint64         `json:"block_timestamp"`
+	TxHash         common.Hash `json:"tx_hash"`
+	TxChainID      uint64      `json:"tx_chain_id"`
+	BlockNumber    uint64      `json:"block_number"`
+	BlockHash      common.Hash `json:"block_hash"`
+	BlockTimestamp uint64      `json:"block_timestamp"`
 }
 
 // Database specific model
@@ -30,7 +29,6 @@ type WithdrawalProvenTxDBRow struct {
 
 	TxHash         dbtypes.Hash
 	TxChainID      uint64
-	TxCaller       dbtypes.Address
 	BlockNumber    uint64
 	BlockHash      dbtypes.Hash
 	BlockTimestamp uint64
@@ -43,7 +41,6 @@ func (m *WithdrawalProvenTx) ToDBRow() *WithdrawalProvenTxDBRow {
 		ProofSubmitter:    dbtypes.Address(m.ProofSubmitter),
 		TxHash:            dbtypes.Hash(m.TxHash),
 		TxChainID:         m.TxChainID,
-		TxCaller:          dbtypes.Address(m.TxCaller),
 		BlockNumber:       m.BlockNumber,
 		BlockHash:         dbtypes.Hash(m.BlockHash),
 		BlockTimestamp:    m.BlockTimestamp,
@@ -57,7 +54,6 @@ func (r *WithdrawalProvenTxDBRow) ToDomainModel() *WithdrawalProvenTx {
 		ProofSubmitter:    r.ProofSubmitter.Common(),
 		TxHash:            r.TxHash.Common(),
 		TxChainID:         r.TxChainID,
-		TxCaller:          r.TxCaller.Common(),
 		BlockNumber:       r.BlockNumber,
 		BlockHash:         r.BlockHash.Common(),
 		BlockTimestamp:    r.BlockTimestamp,

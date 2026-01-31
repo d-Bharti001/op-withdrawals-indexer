@@ -167,10 +167,9 @@ func (s *L1Scanner) savePortalEvent(ctx context.Context, db dbstore.DBStoreProvi
 				ProofSubmitter:    event.ProofSubmitter,
 				TxHash:            event.Raw.TxHash,
 				TxChainID:         s.l1Provider.ChainID(),
-				// TxCaller: event.Raw.	// TODO: remove this from database schema
-				BlockNumber:    event.Raw.BlockNumber,
-				BlockHash:      event.Raw.BlockHash,
-				BlockTimestamp: event.Raw.BlockTimestamp,
+				BlockNumber:       event.Raw.BlockNumber,
+				BlockHash:         event.Raw.BlockHash,
+				BlockTimestamp:    event.Raw.BlockTimestamp,
 			})
 
 	case *blockchain.WithdrawalFinalizedEvent:
@@ -186,10 +185,9 @@ func (s *L1Scanner) savePortalEvent(ctx context.Context, db dbstore.DBStoreProvi
 				Success:           event.Success,
 				TxHash:            event.Raw.TxHash,
 				TxChainID:         s.l1Provider.ChainID(),
-				// TxCaller	// TODO: remove this from database schema
-				BlockNumber:    event.Raw.BlockNumber,
-				BlockHash:      event.Raw.BlockHash,
-				BlockTimestamp: event.Raw.BlockTimestamp,
+				BlockNumber:       event.Raw.BlockNumber,
+				BlockHash:         event.Raw.BlockHash,
+				BlockTimestamp:    event.Raw.BlockTimestamp,
 			})
 
 	default:

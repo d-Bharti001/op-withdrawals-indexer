@@ -13,12 +13,11 @@ func (s *PostgresStore) SaveWithdrawalProvenTx(ctx context.Context, tx *models.W
 			proof_submitter,
 			tx_hash,
 			tx_chain_id,
-			tx_caller,
 			block_number,
 			block_hash,
 			block_timestamp
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		ON CONFLICT (
 			withdrawal_chain_id,
 			withdrawal_hash,
@@ -27,12 +26,10 @@ func (s *PostgresStore) SaveWithdrawalProvenTx(ctx context.Context, tx *models.W
 			proof_submitter
 		)
 		DO UPDATE SET
-			tx_caller       = EXCLUDED.tx_caller,
 			block_number    = EXCLUDED.block_number,
 			block_hash      = EXCLUDED.block_hash,
 			block_timestamp = EXCLUDED.block_timestamp
 		WHERE
-			withdrawal_proven_txs.tx_caller       IS DISTINCT FROM EXCLUDED.tx_caller OR
 			withdrawal_proven_txs.block_number    IS DISTINCT FROM EXCLUDED.block_number OR
 			withdrawal_proven_txs.block_hash      IS DISTINCT FROM EXCLUDED.block_hash OR
 			withdrawal_proven_txs.block_timestamp IS DISTINCT FROM EXCLUDED.block_timestamp;
@@ -51,7 +48,6 @@ func (s *PostgresStore) SaveWithdrawalProvenTx(ctx context.Context, tx *models.W
 		wdProvenTxRow.ProofSubmitter,
 		wdProvenTxRow.TxHash,
 		wdProvenTxRow.TxChainID,
-		wdProvenTxRow.TxCaller,
 		wdProvenTxRow.BlockNumber,
 		wdProvenTxRow.BlockHash,
 		wdProvenTxRow.BlockTimestamp,

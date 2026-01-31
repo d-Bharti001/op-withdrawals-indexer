@@ -21,22 +21,19 @@ func (s *PostgresStore) SaveWithdrawal(ctx context.Context, withdrawal *models.W
 			withdrawal_data,
 			withdrawal_value,
 			tx_hash,
-			tx_caller,
 			block_number,
 			block_hash,
 			block_timestamp
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		ON CONFLICT (chain_id, withdrawal_hash)
 		DO UPDATE SET
 			tx_hash         = EXCLUDED.tx_hash,
-			tx_caller       = EXCLUDED.tx_caller,
 			block_number    = EXCLUDED.block_number,
 			block_hash      = EXCLUDED.block_hash,
 			block_timestamp = EXCLUDED.block_timestamp
 		WHERE
 			withdrawals.tx_hash         IS DISTINCT FROM EXCLUDED.tx_hash OR
-			withdrawals.tx_caller       IS DISTINCT FROM EXCLUDED.tx_caller OR
 			withdrawals.block_number    IS DISTINCT FROM EXCLUDED.block_number OR
 			withdrawals.block_hash      IS DISTINCT FROM EXCLUDED.block_hash OR
 			withdrawals.block_timestamp IS DISTINCT FROM EXCLUDED.block_timestamp;
@@ -57,7 +54,6 @@ func (s *PostgresStore) SaveWithdrawal(ctx context.Context, withdrawal *models.W
 		withdrawalRow.Data,
 		withdrawalRow.Value,
 		withdrawalRow.TxHash,
-		withdrawalRow.TxCaller,
 		withdrawalRow.BlockNumber,
 		withdrawalRow.BlockHash,
 		withdrawalRow.BlockTimestamp,
@@ -76,7 +72,6 @@ func (s *PostgresStore) GetWithdrawal(ctx context.Context, chainID uint64, withd
 			withdrawal_data,
 			withdrawal_value,
 			tx_hash,
-			tx_caller,
 			block_number,
 			block_hash,
 			block_timestamp
@@ -104,7 +99,6 @@ func (s *PostgresStore) GetWithdrawal(ctx context.Context, chainID uint64, withd
 		&withdrawalRow.Data,
 		&withdrawalRow.Value,
 		&withdrawalRow.TxHash,
-		&withdrawalRow.TxCaller,
 		&withdrawalRow.BlockNumber,
 		&withdrawalRow.BlockHash,
 		&withdrawalRow.BlockTimestamp,
