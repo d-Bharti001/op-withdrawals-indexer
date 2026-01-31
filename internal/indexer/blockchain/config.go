@@ -4,17 +4,13 @@ import (
 	"time"
 )
 
-var DefaultL2ChainBlockConfDepth uint64 = 24
-var DefaultL1ChainBlockConfDepth uint64 = 6
-
-var DefaultRpcTimeout = 5 * time.Second
-var DefaultFilterLogsTimeout = 10 * time.Second
+const DefaultRpcTimeout = 5 * time.Second
+const DefaultFilterLogsTimeout = 10 * time.Second
 
 type ChainInitConfig struct {
-	ID                     uint64
-	Name                   string
-	RPCUrl                 string
-	BlockConfirmationDepth uint64
+	ID     uint64
+	Name   string
+	RPCUrl string
 }
 
 type L1ChainInitConfig struct {

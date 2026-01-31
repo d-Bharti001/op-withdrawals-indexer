@@ -42,6 +42,9 @@ func (c *L2Chain) MessagePassedLogs(ctx context.Context, fromBlock, toBlock uint
 		},
 	}
 
+	ctx, cancel := context.WithTimeout(ctx, DefaultFilterLogsTimeout)
+	defer cancel()
+
 	logs, err := c.rpcClient.FilterLogs(ctx, query)
 	if err != nil {
 		return nil, err

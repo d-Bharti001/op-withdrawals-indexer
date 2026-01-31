@@ -8,10 +8,9 @@ import (
 )
 
 type ChainProvider interface {
-	ID() uint64
-	Name() string
+	ChainID() uint64
+	ChainName() string
 	LatestBlockNumber(ctx context.Context) (uint64, error)
-	BlockConfirmationDepth() uint64
 	CloseConnection()
 }
 

@@ -27,10 +27,9 @@ func NewL1Chain(ctx context.Context, cfg L1ChainInitConfig) (*L1Chain, error) {
 
 	l1Chain := L1Chain{
 		Chain: Chain{
-			id:                     l1ChainId,
-			name:                   cfg.Name,
-			rpcClient:              l1Client,
-			blockConfirmationDepth: cfg.BlockConfirmationDepth,
+			id:        l1ChainId,
+			name:      cfg.Name,
+			rpcClient: l1Client,
 		},
 		iOptimismPortal2: bindings.NewIOptimismPortal2(),
 	}
@@ -59,8 +58,10 @@ func NewL2Chain(ctx context.Context, cfg L2ChainInitConfig) (*L2Chain, error) {
 		Name:    "L1 chain for " + cfg.Name,
 	})
 	if err != nil {
+		l2Client.Close()
 		return nil, err
 	}
+	defer l1Client.Close()
 
 	sysConfigContract := bindings.NewISystemConfig()
 	sysConfigInstance := sysConfigContract.Instance(l1Client, common.HexToAddress(cfg.SystemConfigAddr))
@@ -74,9 +75,11 @@ func NewL2Chain(ctx context.Context, cfg L2ChainInitConfig) (*L2Chain, error) {
 		sysConfigContract.UnpackL2ChainId,
 	)
 	if err != nil {
+		l2Client.Close()
 		return nil, err
 	}
 	if sysConfigL2ChainId.Uint64() != cfg.ID {
+		l2Client.Close()
 		return nil, errors.New("system config l2 chain id mismatch")
 	}
 
@@ -87,6 +90,7 @@ func NewL2Chain(ctx context.Context, cfg L2ChainInitConfig) (*L2Chain, error) {
 		sysConfigContract.UnpackStartBlock,
 	)
 	if err != nil {
+		l2Client.Close()
 		return nil, err
 	}
 
@@ -97,6 +101,7 @@ func NewL2Chain(ctx context.Context, cfg L2ChainInitConfig) (*L2Chain, error) {
 		sysConfigContract.UnpackOptimismPortal,
 	)
 	if err != nil {
+		l2Client.Close()
 		return nil, err
 	}
 
@@ -107,6 +112,7 @@ func NewL2Chain(ctx context.Context, cfg L2ChainInitConfig) (*L2Chain, error) {
 		sysConfigContract.UnpackL1CrossDomainMessenger,
 	)
 	if err != nil {
+		l2Client.Close()
 		return nil, err
 	}
 
@@ -117,6 +123,7 @@ func NewL2Chain(ctx context.Context, cfg L2ChainInitConfig) (*L2Chain, error) {
 		sysConfigContract.UnpackL1StandardBridge,
 	)
 	if err != nil {
+		l2Client.Close()
 		return nil, err
 	}
 
@@ -127,15 +134,15 @@ func NewL2Chain(ctx context.Context, cfg L2ChainInitConfig) (*L2Chain, error) {
 		sysConfigContract.UnpackL1ERC721Bridge,
 	)
 	if err != nil {
+		l2Client.Close()
 		return nil, err
 	}
 
 	l2Chain := L2Chain{
 		Chain: Chain{
-			id:                     l2ChainId,
-			name:                   cfg.Name,
-			rpcClient:              l2Client,
-			blockConfirmationDepth: cfg.BlockConfirmationDepth,
+			id:        l2ChainId,
+			name:      cfg.Name,
+			rpcClient: l2Client,
 		},
 		LinkedL1Details: LinkedL1Details{
 			l1ChainId:          l1ChainId,

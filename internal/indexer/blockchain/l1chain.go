@@ -29,6 +29,9 @@ func (c *L1Chain) PortalWithdrawalLogs(ctx context.Context, portalAddrs []common
 		},
 	}
 
+	ctx, cancel := context.WithTimeout(ctx, DefaultFilterLogsTimeout)
+	defer cancel()
+
 	logs, err := c.rpcClient.FilterLogs(ctx, query)
 	if err != nil {
 		return nil, err

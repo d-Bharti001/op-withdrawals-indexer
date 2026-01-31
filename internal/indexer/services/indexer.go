@@ -9,6 +9,8 @@ import (
 	"op-withdrawals-indexer/internal/database/models"
 	"op-withdrawals-indexer/internal/indexer/blockchain"
 	"op-withdrawals-indexer/internal/indexer/dbstore"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 type IndexerApp struct {
@@ -30,10 +32,9 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 
 	l1Chain, err := blockchain.NewL1Chain(ctx, blockchain.L1ChainInitConfig{
 		ChainInitConfig: blockchain.ChainInitConfig{
-			ID:                     cfg.L1ChainID,
-			Name:                   cfg.L1ChainName,
-			RPCUrl:                 cfg.L1RPCUrl,
-			BlockConfirmationDepth: cfg.L1BlockConfirmationDepth,
+			ID:     cfg.L1ChainID,
+			Name:   cfg.L1ChainName,
+			RPCUrl: cfg.L1RPCUrl,
 		},
 	})
 	if err != nil {
@@ -43,10 +44,9 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 
 	l2Chain, err := blockchain.NewL2Chain(ctx, blockchain.L2ChainInitConfig{
 		ChainInitConfig: blockchain.ChainInitConfig{
-			ID:                     cfg.L2ChainID,
-			Name:                   cfg.L2ChainName,
-			RPCUrl:                 cfg.L2RPCUrl,
-			BlockConfirmationDepth: cfg.L2BlockConfirmationDepth,
+			ID:     cfg.L2ChainID,
+			Name:   cfg.L2ChainName,
+			RPCUrl: cfg.L2RPCUrl,
 		},
 		L1RPCUrl:         cfg.L1RPCUrl,
 		L1ChainID:        cfg.L1ChainID,
@@ -71,17 +71,32 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 		return nil, err
 	}
 
+	portalAddresses := []common.Address{
+		l2Chain.OptimismPortalAddr(),
+	}
+	portalAddressToChainID := map[common.Address]uint64{
+		l2Chain.OptimismPortalAddr(): l2Chain.ChainID(),
+	}
+	minL1BlockNumber := l2Chain.L1StartBlockNumber()
+
 	indexer := IndexerApp{
 		ctx:        ctx,
 		cancel:     cancel,
 		dbProvider: db,
 		l1Scanner: L1Scanner{
 			l1Provider:                l1Chain,
+			portalAddresses:           portalAddresses,
+			portalAddressToChainID:    portalAddressToChainID,
+			minBlockToConsider:        minL1BlockNumber,
+			blockScanBatchSizeLimit:   DefaultL1BlockScanBatchSizeLimit,
+			unstableBlocksDepth:       cfg.L1UnstableBlocksDepth,
 			pollingInterval:           DefaultL1PollingInterval,
 			chainIndexerStateTableKey: fmt.Sprintf("%d:%d", cfg.L2ChainID, cfg.L1ChainID),
 		},
 		l2Scanner: L2Scanner{
 			l2Provider:                l2Chain,
+			blockScanBatchSizeLimit:   DefaultL2BlockScanBatchSizeLimit,
+			unstableBlocksDepth:       cfg.L2UnstableBlocksDepth,
 			pollingInterval:           DefaultL2PollingInterval,
 			chainIndexerStateTableKey: fmt.Sprintf("%d", cfg.L2ChainID),
 		},
@@ -97,8 +112,8 @@ func (app *IndexerApp) Start() error {
 	if err := app.dbProvider.SaveL1Chain(
 		app.ctx,
 		&models.Chain{
-			ID:            app.l1Scanner.l1Provider.ID(),
-			Name:          app.l1Scanner.l1Provider.Name(),
+			ID:            app.l1Scanner.l1Provider.ChainID(),
+			Name:          app.l1Scanner.l1Provider.ChainName(),
 			SourceChainID: nil,
 		},
 	); err != nil {
@@ -110,8 +125,8 @@ func (app *IndexerApp) Start() error {
 	if err := app.dbProvider.SaveL2Chain(
 		app.ctx,
 		&models.Chain{
-			ID:            app.l2Scanner.l2Provider.ID(),
-			Name:          app.l2Scanner.l2Provider.Name(),
+			ID:            app.l2Scanner.l2Provider.ChainID(),
+			Name:          app.l2Scanner.l2Provider.ChainName(),
 			SourceChainID: &l2SourceChainID,
 		},
 	); err != nil {
@@ -121,10 +136,16 @@ func (app *IndexerApp) Start() error {
 	// Start scanners
 
 	app.wg.Add(1)
-	go app.l1Scanner.Start(app.ctx, &app.wg, app.dbProvider)
+	go func() {
+		defer app.wg.Done()
+		app.l1Scanner.Start(app.ctx, app.dbProvider)
+	}()
 
 	app.wg.Add(1)
-	go app.l2Scanner.Start(app.ctx, &app.wg, app.dbProvider)
+	go func() {
+		defer app.wg.Done()
+		app.l2Scanner.Start(app.ctx, app.dbProvider)
+	}()
 
 	return nil
 }

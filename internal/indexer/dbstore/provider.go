@@ -29,8 +29,8 @@ type DBStoreProvider interface {
 	) (*models.Token, error)
 	SaveToken(context.Context, *models.Token) error
 
-	SaveChainLatestSyncedBlockNumber(ctx context.Context, chainKey string, blockNumber uint64) error
-	GetChainLatestSyncedBlockNumber(ctx context.Context, chainKey string) (blockNumber uint64, err error)
+	SaveChainLatestScannedBlockNumber(ctx context.Context, chainKey string, blockNumber uint64) error
+	GetChainLatestScannedBlockNumber(ctx context.Context, chainKey string) (blockNumber uint64, err error)
 
 	CloseConnection() error
 }

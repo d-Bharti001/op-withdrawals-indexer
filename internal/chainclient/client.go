@@ -22,10 +22,12 @@ func DialChain(params DialChainParams) (client *ethclient.Client, rpcChainId uin
 
 	chainId, err := cl.ChainID(params.Ctx)
 	if err != nil {
+		cl.Close()
 		return nil, 0, err
 	}
 	chainIdUint64 := chainId.Uint64()
 	if chainIdUint64 != params.ChainID {
+		cl.Close()
 		return nil, 0, fmt.Errorf("chain id mismatch for chain: %v; expected %v, got %v", params.Name, params.ChainID, chainIdUint64)
 	}
 

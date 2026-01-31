@@ -2,7 +2,6 @@ package indexer
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"op-withdrawals-indexer/internal/indexer/blockchain"
@@ -10,15 +9,16 @@ import (
 )
 
 type L2Scanner struct {
-	l2Provider      blockchain.L2ChainProvider
-	pollingInterval time.Duration
+	l2Provider blockchain.L2ChainProvider
+
+	blockScanBatchSizeLimit uint64
+	unstableBlocksDepth     uint64
+	pollingInterval         time.Duration
 
 	chainIndexerStateTableKey string
 }
 
-func (s *L2Scanner) Start(ctx context.Context, wg *sync.WaitGroup, db dbstore.DBStoreProvider) {
-	defer wg.Done()
-
+func (s *L2Scanner) Start(ctx context.Context, db dbstore.DBStoreProvider) error {
 	// TODO: scanner logic
 	// include: select { case: <-ctx.Done(): return, and then other cases }
 
@@ -36,4 +36,6 @@ func (s *L2Scanner) Start(ctx context.Context, wg *sync.WaitGroup, db dbstore.DB
 	// 		// scan logic here
 	// 	}
 	// }
+
+	return ctx.Err()
 }

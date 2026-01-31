@@ -2,9 +2,9 @@ package main
 
 import (
 	"errors"
-	"op-withdrawals-indexer/internal/indexer/blockchain"
-	indexer "op-withdrawals-indexer/internal/indexer/services"
 	"strconv"
+
+	indexer "op-withdrawals-indexer/internal/indexer/services"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/urfave/cli/v3"
@@ -35,12 +35,12 @@ var appFlags []cli.Flag = []cli.Flag{
 		Destination: &appConfig.L1ChainName,
 	},
 	&cli.Uint64Flag{
-		Name:        "l1BlockConfirmationDepth",
-		Usage:       "Depth from the latest block on L1 chain before which the blocks can be considered final",
-		Sources:     cli.EnvVars("L1_BLOCK_CONFIRMATION_DEPTH"),
-		Value:       blockchain.DefaultL1ChainBlockConfDepth,
-		DefaultText: strconv.Itoa(int(blockchain.DefaultL1ChainBlockConfDepth)),
-		Destination: &appConfig.L1BlockConfirmationDepth,
+		Name:        "l1UnstableBlocksDepth",
+		Usage:       "Number of blocks on the L1 chain, counted backwards from the latest block, that can be assumed to change state after being scanned. For depth = 0, only the nth scanned block is considered unstable. For depth = 1, nth and (n-1)th blocks are in the unstable range.",
+		Sources:     cli.EnvVars("L1_UNSTABLE_BLOCKS_DEPTH"),
+		Value:       indexer.DefaultL1ChainUnstableBlocksDepth,
+		DefaultText: strconv.Itoa(int(indexer.DefaultL1ChainUnstableBlocksDepth)),
+		Destination: &appConfig.L1UnstableBlocksDepth,
 	},
 	&cli.StringFlag{
 		Name:        "l2RpcUrl",
@@ -64,12 +64,12 @@ var appFlags []cli.Flag = []cli.Flag{
 		Destination: &appConfig.L2ChainName,
 	},
 	&cli.Uint64Flag{
-		Name:        "l2BlockConfirmationDepth",
-		Usage:       "Depth from the latest block on L2 chain before which the blocks can be considered final",
-		Sources:     cli.EnvVars("L2_BLOCK_CONFIRMATION_DEPTH"),
-		Value:       blockchain.DefaultL2ChainBlockConfDepth,
-		DefaultText: strconv.Itoa(int(blockchain.DefaultL2ChainBlockConfDepth)),
-		Destination: &appConfig.L2BlockConfirmationDepth,
+		Name:        "l2UnstableBlocksDepth",
+		Usage:       "Number of blocks on the L2 chain, counted backwards from the latest block, that can be assumed to change state after being scanned. For depth = 0, only the nth scanned block is considered unstable. For depth = 1, nth and (n-1)th blocks are in the unstable range.",
+		Sources:     cli.EnvVars("L2_UNSTABLE_BLOCKS_DEPTH"),
+		Value:       indexer.DefaultL2ChainUnstableBlocksDepth,
+		DefaultText: strconv.Itoa(int(indexer.DefaultL2ChainUnstableBlocksDepth)),
+		Destination: &appConfig.L2UnstableBlocksDepth,
 	},
 	&cli.StringFlag{
 		Name:        "systemConfigAddr",

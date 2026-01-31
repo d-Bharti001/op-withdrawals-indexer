@@ -6,15 +6,15 @@ import (
 	"errors"
 )
 
-func (s *PostgresStore) SaveChainLatestSyncedBlockNumber(ctx context.Context, chainKey string, blockNumber uint64) error {
+func (s *PostgresStore) SaveChainLatestScannedBlockNumber(ctx context.Context, chainKey string, blockNumber uint64) error {
 	query := `
-		INSERT INTO chain_indexer_states (chain_key, latest_synced_block)
+		INSERT INTO chain_indexer_states (chain_key, latest_scanned_block)
 		VALUES ($1, $2)
 		ON CONFLICT (chain_key)
 		DO UPDATE SET
-			latest_synced_block = EXCLUDED.latest_synced_block
+			latest_scanned_block = EXCLUDED.latest_scanned_block
 		WHERE
-			chain_indexer_states.latest_synced_block < EXCLUDED.latest_synced_block;
+			chain_indexer_states.latest_scanned_block < EXCLUDED.latest_scanned_block;
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, DBQueryTimeout)
@@ -30,9 +30,9 @@ func (s *PostgresStore) SaveChainLatestSyncedBlockNumber(ctx context.Context, ch
 	return err
 }
 
-func (s *PostgresStore) GetChainLatestSyncedBlockNumber(ctx context.Context, chainKey string) (uint64, error) {
+func (s *PostgresStore) GetChainLatestScannedBlockNumber(ctx context.Context, chainKey string) (uint64, error) {
 	query := `
-		SELECT latest_synced_block
+		SELECT latest_scanned_block
 		FROM chain_indexer_states
 		WHERE chain_key = $1;
 	`
