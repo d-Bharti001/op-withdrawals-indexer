@@ -22,14 +22,15 @@ func (s *PostgresStore) SaveWithdrawalProvenTx(ctx context.Context, tx *models.W
 			withdrawal_chain_id,
 			withdrawal_hash,
 			tx_chain_id,
-			tx_hash,
 			proof_submitter
 		)
 		DO UPDATE SET
+			tx_hash         = EXCLUDED.tx_hash,
 			block_number    = EXCLUDED.block_number,
 			block_hash      = EXCLUDED.block_hash,
 			block_timestamp = EXCLUDED.block_timestamp
 		WHERE
+			withdrawal_proven_txs.tx_hash         IS DISTINCT FROM EXCLUDED.tx_hash OR
 			withdrawal_proven_txs.block_number    IS DISTINCT FROM EXCLUDED.block_number OR
 			withdrawal_proven_txs.block_hash      IS DISTINCT FROM EXCLUDED.block_hash OR
 			withdrawal_proven_txs.block_timestamp IS DISTINCT FROM EXCLUDED.block_timestamp;
