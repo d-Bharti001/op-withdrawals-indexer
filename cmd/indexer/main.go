@@ -3,13 +3,19 @@ package main
 import (
 	"context"
 	"log"
-	indexer "op-withdrawals-indexer/internal/indexer/services"
 	"os"
+	"os/signal"
+	"syscall"
+
+	indexer "op-withdrawals-indexer/internal/indexer/services"
 
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	cmd := &cli.Command{
 		Name:   "OP Withdrawals Indexer",
 		Usage:  "index op stack l2 chain's withdrawals",
@@ -17,8 +23,8 @@ func main() {
 		Action: appAction,
 	}
 
-	if err := cmd.Run(context.Background(), os.Args); err != nil {
-		log.Fatalln(err)
+	if err := cmd.Run(ctx, os.Args); err != nil {
+		log.Println(err)
 	}
 }
 
