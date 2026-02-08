@@ -6,7 +6,7 @@ import (
 	"op-withdrawals-indexer/internal/database/models"
 )
 
-func (s *PostgresStore) SaveWithdrawalInfo(ctx context.Context, withdrawalInfo *models.WithdrawalInformation) error {
+func (s *PostgresStore) SaveWithdrawalInfo(ctx context.Context, db DbTx, withdrawalInfo *models.WithdrawalInformation) error {
 	query := `
 		INSERT INTO withdrawal_info (
 			withdrawal_hash,
@@ -28,7 +28,7 @@ func (s *PostgresStore) SaveWithdrawalInfo(ctx context.Context, withdrawalInfo *
 
 	wdInfoRow := withdrawalInfo.ToDBRow()
 
-	_, err := s.db.ExecContext(
+	_, err := db.ExecContext(
 		ctx,
 		query,
 		wdInfoRow.WithdrawalHash,

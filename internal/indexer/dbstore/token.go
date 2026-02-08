@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func (s *PostgresStore) SaveToken(ctx context.Context, token *models.Token) error {
+func (s *PostgresStore) SaveToken(ctx context.Context, db DbTx, token *models.Token) error {
 	query := `
 		INSERT INTO tokens (
 			token_address,
@@ -31,7 +31,7 @@ func (s *PostgresStore) SaveToken(ctx context.Context, token *models.Token) erro
 
 	tokenRow := token.ToDBRow()
 
-	_, err := s.db.ExecContext(
+	_, err := db.ExecContext(
 		ctx,
 		query,
 		tokenRow.Address,
@@ -45,7 +45,7 @@ func (s *PostgresStore) SaveToken(ctx context.Context, token *models.Token) erro
 	return err
 }
 
-func (s *PostgresStore) GetToken(ctx context.Context, chainID uint64, tokenAddr common.Address) (*models.Token, error) {
+func (s *PostgresStore) GetToken(ctx context.Context, db DbTx, chainID uint64, tokenAddr common.Address) (*models.Token, error) {
 	query := `
 		SELECT
 			token_address,
@@ -65,7 +65,7 @@ func (s *PostgresStore) GetToken(ctx context.Context, chainID uint64, tokenAddr 
 
 	var tokenRow models.TokenDBRow
 
-	err := s.db.QueryRowContext(
+	err := db.QueryRowContext(
 		ctx,
 		query,
 		chainID,

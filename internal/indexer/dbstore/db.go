@@ -1,6 +1,7 @@
 package dbstore
 
 import (
+	"context"
 	"database/sql"
 	"op-withdrawals-indexer/internal/database/postgresql"
 )
@@ -18,6 +19,25 @@ func NewPostgresStore(connStr string, maxOpenConns, maxIdleConns int, maxIdleTim
 	return &PostgresStore{
 		db: postgresDb,
 	}, nil
+}
+
+func (s *PostgresStore) DB() DbTx {
+	return s.db
+}
+
+func (s *PostgresStore) WithTx(ctx context.Context, fn func(tx DbTx) error) error {
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if err != nil {
+		return err
+	}
+
+	err = fn(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func (s *PostgresStore) CloseConnection() error {

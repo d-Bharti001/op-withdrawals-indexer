@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func (s *PostgresStore) SaveWithdrawal(ctx context.Context, withdrawal *models.Withdrawal) error {
+func (s *PostgresStore) SaveWithdrawal(ctx context.Context, db DbTx, withdrawal *models.Withdrawal) error {
 	query := `
 		INSERT INTO withdrawals (
 			withdrawal_hash,
@@ -44,7 +44,7 @@ func (s *PostgresStore) SaveWithdrawal(ctx context.Context, withdrawal *models.W
 
 	withdrawalRow := withdrawal.ToDBRow()
 
-	_, err := s.db.ExecContext(
+	_, err := db.ExecContext(
 		ctx,
 		query,
 		withdrawalRow.Hash,
@@ -62,7 +62,7 @@ func (s *PostgresStore) SaveWithdrawal(ctx context.Context, withdrawal *models.W
 	return err
 }
 
-func (s *PostgresStore) GetWithdrawal(ctx context.Context, chainID uint64, withdrawalHash common.Hash) (*models.Withdrawal, error) {
+func (s *PostgresStore) GetWithdrawal(ctx context.Context, db DbTx, chainID uint64, withdrawalHash common.Hash) (*models.Withdrawal, error) {
 	query := `
 		SELECT
 			withdrawal_hash,
@@ -86,7 +86,7 @@ func (s *PostgresStore) GetWithdrawal(ctx context.Context, chainID uint64, withd
 
 	var withdrawalRow models.WithdrawalDBRow
 
-	err := s.db.QueryRowContext(
+	err := db.QueryRowContext(
 		ctx,
 		query,
 		chainID,
