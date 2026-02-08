@@ -3,6 +3,7 @@ package blockchain
 import (
 	"context"
 	"op-withdrawals-indexer/internal/contracts/bindings"
+	"op-withdrawals-indexer/internal/database/models"
 
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -11,6 +12,7 @@ type ChainProvider interface {
 	ChainID() uint64
 	ChainName() string
 	LatestBlockNumber(ctx context.Context) (uint64, error)
+	TokenInfo(ctx context.Context, tokenAddr common.Address, typeHint models.TokenClass) (*models.Token, error)
 	CloseConnection()
 }
 

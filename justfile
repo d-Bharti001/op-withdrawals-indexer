@@ -46,6 +46,7 @@ gen-contract-bindings:
   abigen --v2 --abi {{CONTRACTS_ABI_PATH}}/vendor/IERC165.abi --pkg bindings --type IERC165 --out {{CONTRACTS_BINDINGS_PATH}}/IERC165.go
   abigen --v2 --abi {{CONTRACTS_ABI_PATH}}/vendor/IERC20.abi --pkg bindings --type IERC20 --out {{CONTRACTS_BINDINGS_PATH}}/IERC20.go
   abigen --v2 --abi {{CONTRACTS_ABI_PATH}}/vendor/IERC721.abi --pkg bindings --type IERC721 --out {{CONTRACTS_BINDINGS_PATH}}/IERC721.go
+  abigen --v2 --abi {{CONTRACTS_ABI_PATH}}/vendor/IERC20Metadata.abi --pkg bindings --type IERC20Metadata --out {{CONTRACTS_BINDINGS_PATH}}/IERC20Metadata.go
 
 # Generate swagger docs for API
 gen-docs:
