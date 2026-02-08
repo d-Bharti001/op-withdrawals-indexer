@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"op-withdrawals-indexer/internal/database/models"
+	"op-withdrawals-indexer/internal/decoder"
 	"op-withdrawals-indexer/internal/indexer/blockchain"
 	"op-withdrawals-indexer/internal/indexer/dbstore"
 
@@ -71,6 +72,15 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 		return nil, err
 	}
 
+	evtDecoder, err := decoder.NewEventDecoder()
+	if err != nil {
+		cancel()
+		l1Chain.CloseConnection()
+		l2Chain.CloseConnection()
+		db.CloseConnection()
+		return nil, err
+	}
+
 	portalAddresses := []common.Address{
 		l2Chain.OptimismPortalAddr(),
 	}
@@ -95,6 +105,7 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 		},
 		l2Scanner: L2Scanner{
 			l2Provider:                l2Chain,
+			evtDecoder:                *evtDecoder,
 			blockScanBatchSizeLimit:   DefaultL2BlockScanBatchSizeLimit,
 			unstableBlocksDepth:       cfg.L2UnstableBlocksDepth,
 			pollingInterval:           DefaultL2PollingInterval,
