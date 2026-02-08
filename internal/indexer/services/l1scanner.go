@@ -17,8 +17,8 @@ type L1Scanner struct {
 
 	portalAddresses        []common.Address
 	portalAddressToChainID map[common.Address]uint64
-	minBlockToConsider     uint64
 
+	minBlockToConsider      uint64
 	blockScanBatchSizeLimit uint64
 	unstableBlocksDepth     uint64
 	pollingInterval         time.Duration
@@ -102,6 +102,8 @@ func (s *L1Scanner) scanBlocks(ctx context.Context, db dbstore.DBStoreProvider) 
 
 		logs, err := s.l1Provider.PortalWithdrawalLogs(ctx, s.portalAddresses, startBlock, endBlock)
 		if err != nil {
+			log.Println("L1 Scanner error while fetching portal withdrawal logs :::", err)
+
 			// Re-iterate after some time
 			timer := time.NewTimer(50 * time.Millisecond)
 			select {
@@ -122,6 +124,8 @@ func (s *L1Scanner) scanBlocks(ctx context.Context, db dbstore.DBStoreProvider) 
 			}
 		}
 		if logRecordError != nil {
+			log.Println("L1 Scanner error while saving portal withdrawal event :::", logRecordError)
+
 			// Re-iterate after some time
 			timer := time.NewTimer(50 * time.Millisecond)
 			select {
@@ -135,6 +139,8 @@ func (s *L1Scanner) scanBlocks(ctx context.Context, db dbstore.DBStoreProvider) 
 
 		err = db.SaveChainLatestScannedBlockNumber(ctx, s.chainIndexerStateTableKey, endBlock)
 		if err != nil {
+			log.Println("L1 Scanner error while saving latest scanned block number :::", err)
+
 			// Re-iterate after some time
 			timer := time.NewTimer(20 * time.Millisecond)
 			select {
@@ -152,7 +158,11 @@ func (s *L1Scanner) scanBlocks(ctx context.Context, db dbstore.DBStoreProvider) 
 	return nil
 }
 
-func (s *L1Scanner) savePortalEvent(ctx context.Context, db dbstore.DBStoreProvider, log blockchain.OptimismPortalRelevantWithdrawalEvent) error {
+func (s *L1Scanner) savePortalEvent(
+	ctx context.Context,
+	db dbstore.DBStoreProvider,
+	log blockchain.OptimismPortalRelevantWithdrawalEvent,
+) error {
 	switch event := log.(type) {
 	case *blockchain.WithdrawalProvenEvent:
 		l2ChainID, ok := s.portalAddressToChainID[event.Raw.Address]
