@@ -86,7 +86,7 @@ type WithdrawalDetailsDBRow struct {
 
 	// --- models.WithdrawalInformationDBRow ---
 
-	DecodedAction dbtypes.NullableString
+	DecodedAction *string
 
 	TokenAddress dbtypes.NullableAddress
 	FromAddress  dbtypes.NullableAddress
@@ -96,11 +96,11 @@ type WithdrawalDetailsDBRow struct {
 
 	// --- models.TokenDBRow ---
 
-	TokenChainID  dbtypes.NullableUint64
-	TokenClass    dbtypes.NullableString
-	TokenName     dbtypes.NullableString
-	TokenSymbol   dbtypes.NullableString
-	TokenDecimals dbtypes.NullableUint64
+	TokenChainID  *uint64
+	TokenClass    *string
+	TokenName     *string
+	TokenSymbol   *string
+	TokenDecimals *uint64
 
 	// --- extra fields ---
 
@@ -121,9 +121,9 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, error) {
 	result.BlockNumber = row.BlockNumber
 	result.BlockTimestamp = row.BlockTimestamp
 
-	if row.DecodedAction.Val != nil {
+	if row.DecodedAction != nil {
 
-		switch *row.DecodedAction.Val {
+		switch *row.DecodedAction {
 		case string(models.EthTransferAction):
 			result.Kind = ETHWithdrawal
 		case string(models.ERC20TransferAction):
@@ -133,10 +133,10 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, error) {
 		case string(models.ERC1155TransferAction):
 			result.Kind = ERC1155Withdrawal
 		default:
-			return nil, fmt.Errorf("unrecognized withdrawal action %s", *row.DecodedAction.Val)
+			return nil, fmt.Errorf("unrecognized withdrawal action %s", *row.DecodedAction)
 		}
 
-		result.DecodedAction = row.DecodedAction.Val
+		result.DecodedAction = row.DecodedAction
 		result.TokenAddress = row.TokenAddress.Val
 		result.FromAddress = row.FromAddress.Common()
 		result.ToAddress = row.ToAddress.Common()
@@ -147,10 +147,10 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, error) {
 		result.Kind = CustomWithdrawal
 	}
 
-	if row.TokenChainID.Val != nil && row.TokenClass.Val != nil {
+	if row.TokenChainID != nil && row.TokenClass != nil {
 		var tokenClass models.TokenClass
 
-		switch *row.TokenClass.Val {
+		switch *row.TokenClass {
 		case string(models.ERC20Token):
 			tokenClass = models.ERC20Token
 		case string(models.ERC721Token):
@@ -158,14 +158,14 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, error) {
 		case string(models.ERC1155Token):
 			tokenClass = models.ERC1155Token
 		default:
-			return nil, fmt.Errorf("unrecognized token class %s", *row.TokenClass.Val)
+			return nil, fmt.Errorf("unrecognized token class %s", *row.TokenClass)
 		}
 
-		result.TokenChainID = row.TokenChainID.Val
+		result.TokenChainID = row.TokenChainID
 		result.TokenClass = &tokenClass
-		result.TokenName = row.TokenName.Val
-		result.TokenSymbol = row.TokenSymbol.Val
-		result.TokenDecimals = row.TokenDecimals.Val
+		result.TokenName = row.TokenName
+		result.TokenSymbol = row.TokenSymbol
+		result.TokenDecimals = row.TokenDecimals
 	}
 
 	if row.FinalizationSuccess != nil {

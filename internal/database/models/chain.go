@@ -1,9 +1,5 @@
 package models
 
-import (
-	"op-withdrawals-indexer/internal/database/dbtypes"
-)
-
 // Domain / application specific model
 type Chain struct {
 	ID            uint64  `json:"chain_id"`
@@ -15,14 +11,14 @@ type Chain struct {
 type ChainDBRow struct {
 	ID            uint64
 	Name          string
-	SourceChainID dbtypes.NullableUint64
+	SourceChainID *uint64
 }
 
 func (m *Chain) ToDBRow() *ChainDBRow {
 	return &ChainDBRow{
 		ID:            m.ID,
 		Name:          m.Name,
-		SourceChainID: dbtypes.NewNullableUint64(m.SourceChainID),
+		SourceChainID: m.SourceChainID,
 	}
 }
 
@@ -30,6 +26,6 @@ func (r *ChainDBRow) ToDomainModel() *Chain {
 	return &Chain{
 		ID:            r.ID,
 		Name:          r.Name,
-		SourceChainID: r.SourceChainID.Val,
+		SourceChainID: r.SourceChainID,
 	}
 }
