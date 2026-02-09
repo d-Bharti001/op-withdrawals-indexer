@@ -13,9 +13,9 @@ CREATE TABLE IF NOT EXISTS withdrawals (
     block_hash CHAR(66) NOT NULL CHECK (block_hash = LOWER(block_hash)),
     block_timestamp BIGINT NOT NULL,
 
-    CONSTRAINT id PRIMARY KEY (chain_id, withdrawal_hash)
+    CONSTRAINT withdrawals_pk PRIMARY KEY (chain_id, withdrawal_hash)
 );
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS
+CREATE INDEX IF NOT EXISTS
 idx_withdrawal_initialization_block_timestamp_desc
 ON withdrawals (block_timestamp DESC);
