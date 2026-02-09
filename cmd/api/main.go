@@ -3,20 +3,49 @@ package main
 import (
 	"context"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/ethereum/go-ethereum/ethclient"
+	api "op-withdrawals-indexer/internal/api/service"
+
+	"github.com/urfave/cli/v3"
 )
 
+// @title			OP Withdrawals Indexer API
+// @version		1.0
+// @description	Frontend API service for OP withdrawals indexer
+// @BasePath		/
 func main() {
-	cl, err := ethclient.Dial("http://localhost:8545")
-	if err != nil {
-		log.Fatalln(err)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	cmd := &cli.Command{
+		Name:   "OP Withdrawals Indexer API",
+		Usage:  "api for viewing saved withdrawals",
+		Flags:  appFlags,
+		Action: appAction,
 	}
 
-	chainid, err := cl.ChainID(context.Background())
+	if err := cmd.Run(ctx, os.Args); err != nil {
+		log.Println(err)
+	}
+}
+
+func appAction(ctx context.Context, cmd *cli.Command) error {
+	app, err := api.NewAPIService(ctx, appConfig)
 	if err != nil {
-		log.Fatalf("Error in fetching chain id: %v", err)
+		return err
 	}
 
-	log.Println("Chain ID:", chainid)
+	defer app.Stop()
+
+	err = app.Start()
+	if err != nil {
+		return err
+	}
+
+	<-ctx.Done()
+
+	return nil
 }

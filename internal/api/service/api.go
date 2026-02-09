@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"op-withdrawals-indexer/api/docs"
 	"op-withdrawals-indexer/internal/api/dbstore"
+	"op-withdrawals-indexer/internal/api/docs"
 	"op-withdrawals-indexer/internal/api/handlers/withdrawals"
 
 	"github.com/go-chi/chi/v5"

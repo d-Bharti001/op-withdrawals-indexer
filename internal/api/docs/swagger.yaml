@@ -1,0 +1,113 @@
+basePath: /
+definitions:
+  response.ErrorEnvelope:
+    properties:
+      error:
+        type: string
+    type: object
+  withdrawals.EnvelopedWithdrawalHistoryResponse:
+    properties:
+      message:
+        type: string
+      result:
+        properties:
+          address:
+            type: string
+          source_chain_id:
+            type: integer
+          withdrawals:
+            items:
+              properties:
+                amount:
+                  type: string
+                block_number:
+                  type: integer
+                block_timestamp:
+                  type: integer
+                chain_id:
+                  type: integer
+                decoded_action:
+                  type: string
+                from_address:
+                  type: string
+                kind:
+                  type: string
+                status:
+                  type: string
+                to_address:
+                  type: string
+                token_address:
+                  type: string
+                token_chain_id:
+                  type: integer
+                token_class:
+                  type: string
+                token_decimals:
+                  type: integer
+                token_id:
+                  type: string
+                token_name:
+                  type: string
+                token_symbol:
+                  type: string
+                tx_hash:
+                  type: string
+                withdrawal_data:
+                  type: string
+                withdrawal_hash:
+                  type: string
+                withdrawal_sender:
+                  type: string
+                withdrawal_target:
+                  type: string
+                withdrawal_value:
+                  type: string
+              type: object
+            type: array
+        type: object
+    type: object
+info:
+  contact: {}
+  description: Frontend API service for OP withdrawals indexer
+  title: OP Withdrawals Indexer API
+  version: "1.0"
+paths:
+  /withdrawal-history:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Returns a list of withdrawals of a chain id initiated by an Ethereum address or proven by it.
+        All withdrawals are fetched which are no older than 90 days.
+        Only non-finalized withdrawals older than that are fetched.
+        Withdrawals are fetched in latest-first order.
+      parameters:
+      - description: Ethereum address
+        in: query
+        name: address
+        required: true
+        type: string
+      - description: Chain id of withdrawal initiation
+        in: query
+        name: chain_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/withdrawals.EnvelopedWithdrawalHistoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+      summary: Get withdrawals history related to an address
+      tags:
+      - withdrawals
+swagger: "2.0"

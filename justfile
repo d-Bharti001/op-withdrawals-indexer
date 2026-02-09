@@ -5,6 +5,7 @@ DB_MIGRATIONS_PATH := "./internal/database/migrations"
 CONTRACTS_SOL_INTERFACES_PATH := "./internal/contracts/solidity/interfaces"
 CONTRACTS_ABI_PATH := "./internal/contracts/abi"
 CONTRACTS_BINDINGS_PATH := "./internal/contracts/bindings"
+SWAGGER_DOCS_PATH := "./internal/api/docs"
 
 # Create a new migration
 migrate-create name:
@@ -50,4 +51,10 @@ gen-contract-bindings:
 
 # Generate swagger docs for API
 gen-docs:
-  swag init -g ./api/main.go -d cmd/api,internal/api && swag fmt
+  swag init \
+  -g ./main.go \
+  -d cmd/api,internal/api/handlers/withdrawals,\
+  internal/api/handlers/response \
+  -o {{SWAGGER_DOCS_PATH}}
+
+  swag fmt
