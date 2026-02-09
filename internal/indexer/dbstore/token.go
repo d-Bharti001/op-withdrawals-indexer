@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strings"
 
+	"op-withdrawals-indexer/internal/database/dbtypes"
 	"op-withdrawals-indexer/internal/database/models"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -69,7 +69,7 @@ func (s *PostgresStore) GetToken(ctx context.Context, db DbTx, chainID uint64, t
 		ctx,
 		query,
 		chainID,
-		strings.ToLower(tokenAddr.Hex()),
+		dbtypes.Address(tokenAddr),
 	).Scan(
 		&tokenRow.Address,
 		&tokenRow.ChainID,

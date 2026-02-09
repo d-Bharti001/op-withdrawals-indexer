@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strings"
 
+	"op-withdrawals-indexer/internal/database/dbtypes"
 	"op-withdrawals-indexer/internal/database/models"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -90,7 +90,7 @@ func (s *PostgresStore) GetWithdrawal(ctx context.Context, db DbTx, chainID uint
 		ctx,
 		query,
 		chainID,
-		strings.ToLower(withdrawalHash.Hex()),
+		dbtypes.Hash(withdrawalHash),
 	).Scan(
 		&withdrawalRow.Hash,
 		&withdrawalRow.ChainID,
