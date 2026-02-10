@@ -36,10 +36,12 @@ type WithdrawalDetails struct {
 	WithdrawalHash common.Hash `json:"withdrawal_hash"`
 	ChainID        uint64      `json:"chain_id"`
 
-	Sender common.Address `json:"withdrawal_sender"`
-	Target common.Address `json:"withdrawal_target"`
-	Data   hexutil.Bytes  `json:"withdrawal_data"`
-	Value  *big.Int       `json:"withdrawal_value"`
+	Nonce    *big.Int       `json:"withdrawal_nonce"`
+	Sender   common.Address `json:"withdrawal_sender"`
+	Target   common.Address `json:"withdrawal_target"`
+	Value    *big.Int       `json:"withdrawal_value"`
+	GasLimit *big.Int       `json:"withdrawal_gas_limit"`
+	Data     hexutil.Bytes  `json:"withdrawal_data"`
 
 	TxHash         common.Hash `json:"tx_hash"`
 	BlockNumber    uint64      `json:"block_number"`
@@ -75,10 +77,12 @@ type WithdrawalDetailsDBRow struct {
 	WithdrawalHash dbtypes.Hash
 	ChainID        uint64
 
-	Sender dbtypes.Address
-	Target dbtypes.Address
-	Data   dbtypes.Bytes
-	Value  dbtypes.U256
+	Nonce    dbtypes.U256
+	Sender   dbtypes.Address
+	Target   dbtypes.Address
+	Value    dbtypes.U256
+	GasLimit dbtypes.U256
+	Data     dbtypes.Bytes
 
 	TxHash         dbtypes.Hash
 	BlockNumber    uint64
@@ -113,10 +117,12 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, error) {
 
 	result.WithdrawalHash = row.WithdrawalHash.Common()
 	result.ChainID = row.ChainID
+	result.Nonce = row.Nonce.BigInt()
 	result.Sender = row.Sender.Common()
 	result.Target = row.Target.Common()
-	result.Data = row.Data.HexUtilBytes()
 	result.Value = row.Value.BigInt()
+	result.GasLimit = row.GasLimit.BigInt()
+	result.Data = row.Data.HexUtilBytes()
 	result.TxHash = row.TxHash.Common()
 	result.BlockNumber = row.BlockNumber
 	result.BlockTimestamp = row.BlockTimestamp

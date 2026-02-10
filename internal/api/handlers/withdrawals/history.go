@@ -19,10 +19,12 @@ type EnvelopedWithdrawalHistoryResponse struct {
 		Withdrawals []struct {
 			WithdrawalHash string  `json:"withdrawal_hash"`
 			ChainID        uint64  `json:"chain_id"`
+			Nonce          string  `json:"withdrawal_nonce"`
 			Sender         string  `json:"withdrawal_sender"`
 			Target         string  `json:"withdrawal_target"`
-			Data           string  `json:"withdrawal_data"`
 			Value          string  `json:"withdrawal_value"`
+			GasLimit       string  `json:"withdrawal_gas_limit"`
+			Data           string  `json:"withdrawal_data"`
 			TxHash         string  `json:"tx_hash"`
 			BlockNumber    uint64  `json:"block_number"`
 			BlockTimestamp uint64  `json:"block_timestamp"`

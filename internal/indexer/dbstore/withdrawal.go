@@ -16,16 +16,18 @@ func (s *PostgresStore) SaveWithdrawal(ctx context.Context, db DbTx, withdrawal 
 		INSERT INTO withdrawals (
 			withdrawal_hash,
 			chain_id,
+			withdrawal_nonce,
 			withdrawal_sender,
 			withdrawal_target,
-			withdrawal_data,
 			withdrawal_value,
+			withdrawal_gas_limit,
+			withdrawal_data,
 			tx_hash,
 			block_number,
 			block_hash,
 			block_timestamp
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		ON CONFLICT (chain_id, withdrawal_hash)
 		DO UPDATE SET
 			tx_hash         = EXCLUDED.tx_hash,
@@ -49,10 +51,12 @@ func (s *PostgresStore) SaveWithdrawal(ctx context.Context, db DbTx, withdrawal 
 		query,
 		withdrawalRow.Hash,
 		withdrawalRow.ChainID,
+		withdrawalRow.Nonce,
 		withdrawalRow.Sender,
 		withdrawalRow.Target,
-		withdrawalRow.Data,
 		withdrawalRow.Value,
+		withdrawalRow.GasLimit,
+		withdrawalRow.Data,
 		withdrawalRow.TxHash,
 		withdrawalRow.BlockNumber,
 		withdrawalRow.BlockHash,
@@ -67,10 +71,12 @@ func (s *PostgresStore) GetWithdrawal(ctx context.Context, db DbTx, chainID uint
 		SELECT
 			withdrawal_hash,
 			chain_id,
+			withdrawal_nonce,
 			withdrawal_sender,
 			withdrawal_target,
-			withdrawal_data,
 			withdrawal_value,
+			withdrawal_gas_limit,
+			withdrawal_data,
 			tx_hash,
 			block_number,
 			block_hash,
@@ -94,10 +100,12 @@ func (s *PostgresStore) GetWithdrawal(ctx context.Context, db DbTx, chainID uint
 	).Scan(
 		&withdrawalRow.Hash,
 		&withdrawalRow.ChainID,
+		&withdrawalRow.Nonce,
 		&withdrawalRow.Sender,
 		&withdrawalRow.Target,
-		&withdrawalRow.Data,
 		&withdrawalRow.Value,
+		&withdrawalRow.GasLimit,
+		&withdrawalRow.Data,
 		&withdrawalRow.TxHash,
 		&withdrawalRow.BlockNumber,
 		&withdrawalRow.BlockHash,

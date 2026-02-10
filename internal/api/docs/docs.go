@@ -182,7 +182,13 @@ const docTemplate = `{
                                     "withdrawal_data": {
                                         "type": "string"
                                     },
+                                    "withdrawal_gas_limit": {
+                                        "type": "string"
+                                    },
                                     "withdrawal_hash": {
+                                        "type": "string"
+                                    },
+                                    "withdrawal_nonce": {
                                         "type": "string"
                                     },
                                     "withdrawal_sender": {

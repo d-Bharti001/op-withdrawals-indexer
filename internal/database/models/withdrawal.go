@@ -13,10 +13,12 @@ type Withdrawal struct {
 	Hash    common.Hash `json:"withdrawal_hash"`
 	ChainID uint64      `json:"chain_id"`
 
-	Sender common.Address `json:"withdrawal_sender"`
-	Target common.Address `json:"withdrawal_target"`
-	Data   hexutil.Bytes  `json:"withdrawal_data"`
-	Value  *big.Int       `json:"withdrawal_value"`
+	Nonce    *big.Int       `json:"withdrawal_nonce"`
+	Sender   common.Address `json:"withdrawal_sender"`
+	Target   common.Address `json:"withdrawal_target"`
+	Value    *big.Int       `json:"withdrawal_value"`
+	GasLimit *big.Int       `json:"withdrawal_gas_limit"`
+	Data     hexutil.Bytes  `json:"withdrawal_data"`
 
 	TxHash         common.Hash `json:"tx_hash"`
 	BlockNumber    uint64      `json:"block_number"`
@@ -29,10 +31,12 @@ type WithdrawalDBRow struct {
 	Hash    dbtypes.Hash
 	ChainID uint64
 
-	Sender dbtypes.Address
-	Target dbtypes.Address
-	Data   dbtypes.Bytes
-	Value  dbtypes.U256
+	Nonce    dbtypes.U256
+	Sender   dbtypes.Address
+	Target   dbtypes.Address
+	Value    dbtypes.U256
+	GasLimit dbtypes.U256
+	Data     dbtypes.Bytes
 
 	TxHash         dbtypes.Hash
 	BlockNumber    uint64
@@ -44,10 +48,12 @@ func (m *Withdrawal) ToDBRow() *WithdrawalDBRow {
 	return &WithdrawalDBRow{
 		Hash:           dbtypes.Hash(m.Hash),
 		ChainID:        m.ChainID,
+		Nonce:          dbtypes.NewU256(m.Nonce),
 		Sender:         dbtypes.Address(m.Sender),
 		Target:         dbtypes.Address(m.Target),
-		Data:           dbtypes.Bytes(m.Data),
 		Value:          dbtypes.NewU256(m.Value),
+		GasLimit:       dbtypes.NewU256(m.GasLimit),
+		Data:           dbtypes.Bytes(m.Data),
 		TxHash:         dbtypes.Hash(m.TxHash),
 		BlockNumber:    m.BlockNumber,
 		BlockHash:      dbtypes.Hash(m.BlockHash),
@@ -59,10 +65,12 @@ func (r *WithdrawalDBRow) ToDomainModel() *Withdrawal {
 	return &Withdrawal{
 		Hash:           r.Hash.Common(),
 		ChainID:        r.ChainID,
+		Nonce:          r.Nonce.BigInt(),
 		Sender:         r.Sender.Common(),
 		Target:         r.Target.Common(),
-		Data:           r.Data.HexUtilBytes(),
 		Value:          r.Value.BigInt(),
+		GasLimit:       r.GasLimit.BigInt(),
+		Data:           r.Data.HexUtilBytes(),
 		TxHash:         r.TxHash.Common(),
 		BlockNumber:    r.BlockNumber,
 		BlockHash:      r.BlockHash.Common(),

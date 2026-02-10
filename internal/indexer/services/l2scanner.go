@@ -168,10 +168,12 @@ func (s *L2Scanner) saveWithdrawalEvent(ctx context.Context, db dbstore.DBStoreP
 	withdrawalModel := models.Withdrawal{
 		Hash:           log.WithdrawalHash,
 		ChainID:        s.l2Provider.ChainID(),
+		Nonce:          log.Nonce,
 		Sender:         log.Sender,
 		Target:         log.Target,
-		Data:           log.Data,
 		Value:          log.Value,
+		GasLimit:       log.GasLimit,
+		Data:           log.Data,
 		TxHash:         log.Raw.TxHash,
 		BlockNumber:    log.Raw.BlockNumber,
 		BlockHash:      log.Raw.BlockHash,
