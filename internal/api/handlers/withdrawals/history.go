@@ -37,8 +37,9 @@ type EnvelopedWithdrawalHistoryResponse struct {
 			TokenName      *string `json:"token_name,omitempty"`
 			TokenSymbol    *string `json:"token_symbol,omitempty"`
 			TokenDecimals  *uint64 `json:"token_decimals,omitempty"`
-			Status         string  `json:"status"`
-			Kind           string  `json:"kind"`
+
+			Status dbmodels.WithdrawalStatus `json:"status"`
+			Kind   dbmodels.WithdrawalKind   `json:"kind"`
 		} `json:"withdrawals"`
 	} `json:"result"`
 }

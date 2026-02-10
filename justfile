@@ -66,7 +66,8 @@ gen-docs:
   swag init \
   -g ./main.go \
   -d cmd/api,internal/api/handlers/withdrawals,\
-  internal/api/handlers/response \
+  internal/api/handlers/response,\
+  internal/api/dbmodels \
   -o {{SWAGGER_DOCS_PATH}}
 
   swag fmt

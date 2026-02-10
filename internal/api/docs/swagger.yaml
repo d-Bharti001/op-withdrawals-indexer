@@ -1,5 +1,31 @@
 basePath: /
 definitions:
+  dbmodels.WithdrawalKind:
+    enum:
+    - custom
+    - eth
+    - erc20
+    - erc721
+    - erc1155
+    type: string
+    x-enum-varnames:
+    - CustomWithdrawal
+    - ETHWithdrawal
+    - ERC20Withdrawal
+    - ERC721Withdrawal
+    - ERC1155Withdrawal
+  dbmodels.WithdrawalStatus:
+    enum:
+    - initiated
+    - proven
+    - finalized_successful
+    - finalized_failed
+    type: string
+    x-enum-varnames:
+    - WithdrawalInitiated
+    - WithdrawalProven
+    - WithdrawalFinalizedSuccess
+    - WithdrawalFinalizedFail
   response.ErrorEnvelope:
     properties:
       error:
@@ -31,9 +57,9 @@ definitions:
                 from_address:
                   type: string
                 kind:
-                  type: string
+                  $ref: '#/definitions/dbmodels.WithdrawalKind'
                 status:
-                  type: string
+                  $ref: '#/definitions/dbmodels.WithdrawalStatus'
                 to_address:
                   type: string
                 token_address:

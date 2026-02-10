@@ -61,6 +61,38 @@
         }
     },
     "definitions": {
+        "dbmodels.WithdrawalKind": {
+            "type": "string",
+            "enum": [
+                "custom",
+                "eth",
+                "erc20",
+                "erc721",
+                "erc1155"
+            ],
+            "x-enum-varnames": [
+                "CustomWithdrawal",
+                "ETHWithdrawal",
+                "ERC20Withdrawal",
+                "ERC721Withdrawal",
+                "ERC1155Withdrawal"
+            ]
+        },
+        "dbmodels.WithdrawalStatus": {
+            "type": "string",
+            "enum": [
+                "initiated",
+                "proven",
+                "finalized_successful",
+                "finalized_failed"
+            ],
+            "x-enum-varnames": [
+                "WithdrawalInitiated",
+                "WithdrawalProven",
+                "WithdrawalFinalizedSuccess",
+                "WithdrawalFinalizedFail"
+            ]
+        },
         "response.ErrorEnvelope": {
             "type": "object",
             "properties": {
@@ -108,10 +140,10 @@
                                         "type": "string"
                                     },
                                     "kind": {
-                                        "type": "string"
+                                        "$ref": "#/definitions/dbmodels.WithdrawalKind"
                                     },
                                     "status": {
-                                        "type": "string"
+                                        "$ref": "#/definitions/dbmodels.WithdrawalStatus"
                                     },
                                     "to_address": {
                                         "type": "string"
