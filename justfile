@@ -6,6 +6,18 @@ CONTRACTS_SOL_INTERFACES_PATH := "./internal/contracts/solidity/interfaces"
 CONTRACTS_ABI_PATH := "./internal/contracts/abi"
 CONTRACTS_BINDINGS_PATH := "./internal/contracts/bindings"
 SWAGGER_DOCS_PATH := "./internal/api/docs"
+BUILD_PATH := "./bin"
+
+# Build the indexer service executable
+build-indexer:
+  go build -o {{BUILD_PATH}}/indexer ./cmd/indexer/*
+
+# Build the api service executable
+build-api:
+  go build -o {{BUILD_PATH}}/api ./cmd/api/*
+
+# Build both the service executables
+build-all: build-indexer build-api
 
 # Create a new migration
 migrate-create name:
@@ -13,11 +25,11 @@ migrate-create name:
 
 # Apply all migrations
 migrate-up:
-  migrate -path={{DB_MIGRATIONS_PATH}} -database=$DB_ADDR up
+  migrate -path={{DB_MIGRATIONS_PATH}} -database=$DB_CONN_STR up
 
 # Rollback migrations (N steps, default 1)
 migrate-down steps="1":
-  migrate -path={{DB_MIGRATIONS_PATH}} -database=$DB_ADDR down {{steps}}
+  migrate -path={{DB_MIGRATIONS_PATH}} -database=$DB_CONN_STR down {{steps}}
 
 # Generate abi files from Solidity interfaces
 # Add / remove the commands according to available contracts

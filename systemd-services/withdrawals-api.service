@@ -1,0 +1,20 @@
+[Unit]
+Description=OP Withdrawals Indexer API Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=30s
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+WorkingDirectory=/path/to/project_root
+EnvironmentFile=/path/to/project_root/.env
+ExecStart=/path/to/project_root/bin/api
+
+TimeoutStopSec=120s
+
+[Install]
+WantedBy=multi-user.target
