@@ -104,7 +104,11 @@ func (h *WithdrawalsHandler) GetWithdrawalHistory(w http.ResponseWriter, r *http
 		w,
 		http.StatusOK,
 		"Withdrawal history fetched successfully",
-		dbResult,
+		WithdrawalHistoryResponse{
+			Address:     addr,
+			ChainID:     chainID,
+			Withdrawals: dbResult,
+		},
 	)
 	if err != nil {
 		response.SendErrorResponse(w, http.StatusInternalServerError, err.Error())
