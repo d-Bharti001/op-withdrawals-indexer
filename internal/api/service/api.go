@@ -21,6 +21,7 @@ import (
 type APIService struct {
 	ctx      context.Context
 	cancel   context.CancelFunc
+	wg       sync.WaitGroup
 	stopOnce sync.Once
 
 	dbProvider dbstore.DBStoreProvider
@@ -86,6 +87,7 @@ func NewAPIService(ctx context.Context, cfg APIInitConfig) (*APIService, error) 
 		ctx:        ctx,
 		cancel:     cancel,
 		dbProvider: db,
+		port:       cfg.HTTPPort,
 		server: &http.Server{
 			Addr:         fmt.Sprintf(":%s", cfg.HTTPPort),
 			Handler:      r,
@@ -103,9 +105,17 @@ func (app *APIService) Start() error {
 	docs.SwaggerInfo.BasePath = "/"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
-	log.Println("Starting HTTP server on port", app.port)
+	app.wg.Add(1)
+	go func() {
+		defer app.wg.Done()
+		log.Println("Starting HTTP server on port", app.port)
+		err := app.server.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Println("HTTP server error :::", err)
+		}
+	}()
 
-	return app.server.ListenAndServe()
+	return nil
 }
 
 func (app *APIService) Stop() {
@@ -115,21 +125,39 @@ func (app *APIService) Stop() {
 		ctx, cancel := context.WithTimeout(context.Background(), ShutdownTimeout)
 		defer cancel()
 
+		// Signal shutdown
+		if app.cancel != nil {
+			app.cancel()
+		}
+
 		if app.server != nil {
+			log.Println("Shutting down HTTP server...")
 			err := app.server.Shutdown(ctx)
 			if err != nil {
-				log.Println("Error while shutting down http server :::", err)
-			} else {
-				log.Println("HTTP server shut down.")
+				log.Println("Error shutting down http server :::", err)
 			}
 		}
 
+		log.Println("Waiting for HTTP server to stop...")
+
+		done := make(chan struct{})
+		go func() {
+			app.wg.Wait()
+			close(done)
+		}()
+
+		select {
+		case <-done:
+			log.Println("Server stopped.")
+		case <-ctx.Done():
+			log.Println("Server shutdown timeout exceeded", ctx.Err())
+		}
+
 		if app.dbProvider != nil {
+			log.Println("Closing database connection...")
 			err := app.dbProvider.CloseConnection()
 			if err != nil {
-				log.Println("Error while closing database connection :::", err)
-			} else {
-				log.Println("Database connection closed.")
+				log.Println("Error closing database connection :::", err)
 			}
 		}
 
