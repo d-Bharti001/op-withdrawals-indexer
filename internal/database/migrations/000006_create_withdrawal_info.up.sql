@@ -13,10 +13,6 @@ CREATE TABLE IF NOT EXISTS withdrawal_info (
     CONSTRAINT fk_withdrawal
         FOREIGN KEY (chain_id, withdrawal_hash)
         REFERENCES withdrawals (chain_id, withdrawal_hash),
-    
-    CONSTRAINT fk_token
-        FOREIGN KEY (chain_id, token_address)
-        REFERENCES tokens (chain_id, token_address),
 
     CONSTRAINT unique_withdrawal_info
         UNIQUE (chain_id, withdrawal_hash)

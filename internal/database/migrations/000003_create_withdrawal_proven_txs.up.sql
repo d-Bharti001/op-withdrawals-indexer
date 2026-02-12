@@ -11,10 +11,6 @@ CREATE TABLE IF NOT EXISTS withdrawal_proven_txs (
     block_hash CHAR(66) NOT NULL CHECK (block_hash = LOWER(block_hash)),
     block_timestamp BIGINT NOT NULL,
 
-    CONSTRAINT fk_withdrawal
-        FOREIGN KEY (withdrawal_chain_id, withdrawal_hash)
-        REFERENCES withdrawals (chain_id, withdrawal_hash),
-
-    CONSTRAINT unique_withdrawal_proven
-        UNIQUE (withdrawal_chain_id, withdrawal_hash, tx_chain_id, proof_submitter)
+    CONSTRAINT withdrawal_proven_txs_pk
+        PRIMARY KEY (withdrawal_chain_id, withdrawal_hash, tx_chain_id, proof_submitter)
 );
