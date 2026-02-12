@@ -43,6 +43,8 @@ type EnvelopedWithdrawalHistoryResponse struct {
 			Status dbmodels.WithdrawalStatus `json:"status"`
 			Kind   dbmodels.WithdrawalKind   `json:"kind"`
 		} `json:"withdrawals"`
+
+		TotalCount uint64 `json:"total_count"`
 	} `json:"result"`
 }
 
@@ -50,6 +52,7 @@ type WithdrawalHistoryResponse struct {
 	Address     common.Address                `json:"address"`
 	ChainID     uint64                        `json:"source_chain_id"`
 	Withdrawals []*dbmodels.WithdrawalDetails `json:"withdrawals"`
+	TotalCount  uint64                        `json:"total_count"`
 }
 
 // GetWithdrawalHistory godoc
@@ -59,12 +62,14 @@ type WithdrawalHistoryResponse struct {
 //	@Description	All withdrawals are fetched which are no older than 90 days.
 //	@Description	Only non-finalized withdrawals older than that are fetched.
 //	@Description	Withdrawals are fetched in latest-first order.
+//	@Description	Paginated query, with batches of 25.
 //
 //	@Tags			withdrawals
 //	@Accept			json
 //	@Produce		json
 //	@Param			address		query		string	true	"Ethereum address"
-//	@Param			chain_id	query		string	true	"Chain id of withdrawal initiation"
+//	@Param			chain_id	query		uint	true	"Chain id of withdrawal initiation transaction"
+//	@Param			page		query		uint	false	"Page number for pagination"
 //	@Success		200			{object}	EnvelopedWithdrawalHistoryResponse
 //	@Failure		400			{object}	response.ErrorEnvelope
 //	@Failure		500			{object}	response.ErrorEnvelope
@@ -72,6 +77,7 @@ type WithdrawalHistoryResponse struct {
 func (h *WithdrawalsHandler) GetWithdrawalHistory(w http.ResponseWriter, r *http.Request) {
 	queryAddress := r.URL.Query().Get("address")
 	queryChainID := r.URL.Query().Get("chain_id")
+	queryPageNumber := r.URL.Query().Get("page")
 
 	if queryAddress == "" || !common.IsHexAddress(queryAddress) {
 		response.SendErrorResponse(w, http.StatusBadRequest, "address query param missing or malformed")
@@ -83,10 +89,20 @@ func (h *WithdrawalsHandler) GetWithdrawalHistory(w http.ResponseWriter, r *http
 		return
 	}
 
+	page := 1
+	if queryPageNumber != "" {
+		p, err := strconv.Atoi(queryPageNumber)
+		if err != nil || p <= 0 {
+			response.SendErrorResponse(w, http.StatusBadRequest, "invalid page number")
+			return
+		}
+		page = p
+	}
+
 	addr := common.HexToAddress(queryAddress)
 
 	chainIDInt, err := strconv.Atoi(queryChainID)
-	if err != nil {
+	if err != nil || chainIDInt <= 0 {
 		response.SendErrorResponse(w, http.StatusBadRequest, "chain id query param malformed")
 		return
 	}
@@ -97,7 +113,17 @@ func (h *WithdrawalsHandler) GetWithdrawalHistory(w http.ResponseWriter, r *http
 	ninetyDays := 90 * 24 * time.Hour
 	sinceTime := currentTime.Add(-ninetyDays)
 
-	dbResult, err := h.db.WithdrawalHistory(r.Context(), addr, chainID, uint64(sinceTime.Unix()))
+	limit := 25
+	offset := limit * (page - 1)
+
+	dbResult, totalCount, err := h.db.WithdrawalHistory(
+		r.Context(),
+		addr,
+		chainID,
+		uint64(sinceTime.Unix()),
+		uint64(limit),
+		uint64(offset),
+	)
 	if err != nil {
 		response.SendErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
@@ -111,6 +137,7 @@ func (h *WithdrawalsHandler) GetWithdrawalHistory(w http.ResponseWriter, r *http
 			Address:     addr,
 			ChainID:     chainID,
 			Withdrawals: dbResult,
+			TotalCount:  totalCount,
 		},
 	)
 	if err != nil {

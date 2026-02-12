@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Address, chainID, sinceTimestamp uint64) ([]*dbmodels.WithdrawalDetails, error) {
+func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Address, chainID, sinceTimestamp, limit, offset uint64) ([]*dbmodels.WithdrawalDetails, uint64, error) {
 	query := `
 		WITH
 			proven_flags AS (
@@ -55,7 +55,8 @@ func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Addre
 			t.token_symbol,
 			t.token_decimals,
 			COALESCE(pf.proven, FALSE) AS proven,
-			ff.finalization_success
+			ff.finalization_success,
+			COUNT(*) OVER() AS total_count
 
 		FROM withdrawals w
 
@@ -91,7 +92,8 @@ func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Addre
 				OR ff.finalization_success IS NULL
 			)
 
-		ORDER BY w.block_timestamp DESC;
+		ORDER BY w.block_timestamp DESC
+		LIMIT $4 OFFSET $5;
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, DBQueryTimeout)
@@ -103,13 +105,17 @@ func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Addre
 		dbtypes.Address(addr),
 		chainID,
 		sinceTimestamp,
+		limit,
+		offset,
 	)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
+	var totalCount uint64
 	result := make([]*dbmodels.WithdrawalDetails, 0)
+
 	for rows.Next() {
 		var row dbmodels.WithdrawalDetailsDBRow
 		err = rows.Scan(
@@ -137,22 +143,23 @@ func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Addre
 			&row.TokenDecimals,
 			&row.Proven,
 			&row.FinalizationSuccess,
+			&totalCount,
 		)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		domainModel, err := row.ToDomainModel()
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		result = append(result, domainModel)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return result, nil
+	return result, totalCount, nil
 }

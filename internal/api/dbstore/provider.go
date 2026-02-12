@@ -8,6 +8,18 @@ import (
 )
 
 type DBStoreProvider interface {
-	WithdrawalHistory(ctx context.Context, addr common.Address, chainID, sinceTimestamp uint64) ([]*dbmodels.WithdrawalDetails, error)
+	WithdrawalHistory(
+		ctx context.Context,
+		addr common.Address,
+		chainID,
+		sinceTimestamp,
+		limit,
+		offset uint64,
+	) (
+		list []*dbmodels.WithdrawalDetails,
+		totalCount uint64,
+		err error,
+	)
+
 	CloseConnection() error
 }

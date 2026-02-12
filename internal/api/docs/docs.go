@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/withdrawal-history": {
             "get": {
-                "description": "Returns a list of withdrawals of a chain id initiated by an Ethereum address or proven by it.\nAll withdrawals are fetched which are no older than 90 days.\nOnly non-finalized withdrawals older than that are fetched.\nWithdrawals are fetched in latest-first order.",
+                "description": "Returns a list of withdrawals of a chain id initiated by an Ethereum address or proven by it.\nAll withdrawals are fetched which are no older than 90 days.\nOnly non-finalized withdrawals older than that are fetched.\nWithdrawals are fetched in latest-first order.\nPaginated query, with batches of 25.",
                 "consumes": [
                     "application/json"
                 ],
@@ -37,11 +37,17 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "Chain id of withdrawal initiation",
+                        "type": "integer",
+                        "description": "Chain id of withdrawal initiation transaction",
                         "name": "chain_id",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number for pagination",
+                        "name": "page",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -121,6 +127,9 @@ const docTemplate = `{
                             "type": "string"
                         },
                         "source_chain_id": {
+                            "type": "integer"
+                        },
+                        "total_count": {
                             "type": "integer"
                         },
                         "withdrawals": {
