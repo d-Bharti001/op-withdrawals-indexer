@@ -42,6 +42,14 @@ var appFlags []cli.Flag = []cli.Flag{
 		DefaultText: strconv.Itoa(int(indexer.DefaultL1ChainUnstableBlocksDepth)),
 		Destination: &appConfig.L1UnstableBlocksDepth,
 	},
+	&cli.Uint64Flag{
+		Name:        "l1BlockScanBatchSizeLimit",
+		Usage:       "(Max) number of blocks to scan in a single batch on the L1 chain",
+		Sources:     cli.EnvVars("L1_BLOCK_SCAN_BATCH_SIZE_LIMIT"),
+		Value:       indexer.DefaultL1BlockScanBatchSizeLimit,
+		DefaultText: strconv.Itoa(int(indexer.DefaultL1BlockScanBatchSizeLimit)),
+		Destination: &appConfig.L1BlockScanBatchSizeLimit,
+	},
 	&cli.StringFlag{
 		Name:        "l2RpcUrl",
 		Usage:       "RPC URL for L2 chain",
@@ -70,6 +78,14 @@ var appFlags []cli.Flag = []cli.Flag{
 		Value:       indexer.DefaultL2ChainUnstableBlocksDepth,
 		DefaultText: strconv.Itoa(int(indexer.DefaultL2ChainUnstableBlocksDepth)),
 		Destination: &appConfig.L2UnstableBlocksDepth,
+	},
+	&cli.Uint64Flag{
+		Name:        "l2BlockScanBatchSizeLimit",
+		Usage:       "(Max) number of blocks to scan in a single batch on the L2 chain",
+		Sources:     cli.EnvVars("L2_BLOCK_SCAN_BATCH_SIZE_LIMIT"),
+		Value:       indexer.DefaultL2BlockScanBatchSizeLimit,
+		DefaultText: strconv.Itoa(int(indexer.DefaultL2BlockScanBatchSizeLimit)),
+		Destination: &appConfig.L2BlockScanBatchSizeLimit,
 	},
 	&cli.StringFlag{
 		Name:        "systemConfigAddr",

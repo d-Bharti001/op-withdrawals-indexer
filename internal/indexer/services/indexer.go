@@ -98,7 +98,7 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 			portalAddresses:           portalAddresses,
 			portalAddressToChainID:    portalAddressToChainID,
 			minBlockToConsider:        minL1BlockNumber,
-			blockScanBatchSizeLimit:   DefaultL1BlockScanBatchSizeLimit,
+			blockScanBatchSizeLimit:   cfg.L1BlockScanBatchSizeLimit,
 			unstableBlocksDepth:       cfg.L1UnstableBlocksDepth,
 			pollingInterval:           DefaultL1PollingInterval,
 			chainIndexerStateTableKey: fmt.Sprintf("%d:%d", cfg.L2ChainID, cfg.L1ChainID),
@@ -106,7 +106,7 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 		l2Scanner: L2Scanner{
 			l2Provider:                l2Chain,
 			evtDecoder:                *evtDecoder,
-			blockScanBatchSizeLimit:   DefaultL2BlockScanBatchSizeLimit,
+			blockScanBatchSizeLimit:   cfg.L2BlockScanBatchSizeLimit,
 			unstableBlocksDepth:       cfg.L2UnstableBlocksDepth,
 			pollingInterval:           DefaultL2PollingInterval,
 			chainIndexerStateTableKey: fmt.Sprintf("%d", cfg.L2ChainID),
