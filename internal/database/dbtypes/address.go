@@ -75,13 +75,13 @@ func (a *NullableAddress) Scan(val any) error {
 }
 
 // Value implements the database/sql/driver Valuer interface
-func (a *NullableAddress) Value() (driver.Value, error) {
+func (a NullableAddress) Value() (driver.Value, error) {
 	if a.Val == nil {
 		return nil, nil
 	}
 	return strings.ToLower(a.Val.Hex()), nil
 }
 
-func (a *NullableAddress) Common() *common.Address {
+func (a NullableAddress) Common() *common.Address {
 	return a.Val
 }
