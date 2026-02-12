@@ -117,6 +117,7 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 }
 
 func (app *IndexerApp) Start() error {
+	log.Println("Starting indexer...")
 
 	// Save chains into database
 
@@ -149,12 +150,14 @@ func (app *IndexerApp) Start() error {
 	app.wg.Add(1)
 	go func() {
 		defer app.wg.Done()
+		log.Println("Starting L1 Scanner...")
 		app.l1Scanner.Start(app.ctx, app.dbProvider)
 	}()
 
 	app.wg.Add(1)
 	go func() {
 		defer app.wg.Done()
+		log.Println("Starting L2 Scanner...")
 		app.l2Scanner.Start(app.ctx, app.dbProvider)
 	}()
 

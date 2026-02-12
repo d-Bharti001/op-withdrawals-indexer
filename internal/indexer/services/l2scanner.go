@@ -151,6 +151,8 @@ func (s *L2Scanner) scanBlocks(ctx context.Context, db dbstore.DBStoreProvider) 
 			}
 		}
 
+		log.Printf("L2 Scanner [chain id %d]: scanned blocks [%d..%d]\n", s.l2Provider.ChainID(), startBlock, endBlock)
+
 		startBlock = endBlock + 1
 	}
 
