@@ -35,7 +35,7 @@ func (b Bytes) Value() (driver.Value, error) {
 	return []byte(b), nil
 }
 
-func (b Bytes) HexUtilBytes() hexutil.Bytes {
+func (b Bytes) Common() hexutil.Bytes {
 	return hexutil.Bytes(b)
 }
 
@@ -66,7 +66,7 @@ func (b *NullableBytes) Scan(val any) error {
 		return err
 	}
 
-	commonBytes := bytes.HexUtilBytes()
+	commonBytes := bytes.Common()
 	b.Val = &commonBytes
 	return nil
 }
@@ -79,7 +79,7 @@ func (b NullableBytes) Value() (driver.Value, error) {
 	return []byte(*b.Val), nil
 }
 
-func (b NullableBytes) HexUtilBytes() *hexutil.Bytes {
+func (b NullableBytes) Common() *hexutil.Bytes {
 	return b.Val
 }
 

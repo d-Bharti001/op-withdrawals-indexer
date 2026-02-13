@@ -70,7 +70,7 @@ func (r *WithdrawalDBRow) ToDomainModel() *Withdrawal {
 		Target:         r.Target.Common(),
 		Value:          r.Value.BigInt(),
 		GasLimit:       r.GasLimit.BigInt(),
-		Data:           r.Data.HexUtilBytes(),
+		Data:           r.Data.Common(),
 		TxHash:         r.TxHash.Common(),
 		BlockNumber:    r.BlockNumber,
 		BlockHash:      r.BlockHash.Common(),

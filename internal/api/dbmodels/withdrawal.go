@@ -129,7 +129,7 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, uint64, 
 	result.Target = *row.Target.Common()
 	result.Value = row.Value.BigInt()
 	result.GasLimit = row.GasLimit.BigInt()
-	result.Data = *row.Data.HexUtilBytes()
+	result.Data = *row.Data.Common()
 	result.TxHash = *row.TxHash.Common()
 	result.BlockNumber = *row.BlockNumber
 	result.BlockTimestamp = *row.BlockTimestamp
