@@ -2,7 +2,6 @@ package dbmodels
 
 import (
 	"fmt"
-	"math/big"
 	"op-withdrawals-indexer/internal/database/dbtypes"
 	"op-withdrawals-indexer/internal/database/models"
 
@@ -36,11 +35,11 @@ type WithdrawalDetails struct {
 	WithdrawalHash common.Hash `json:"withdrawal_hash"`
 	ChainID        uint64      `json:"chain_id"`
 
-	Nonce    *big.Int       `json:"withdrawal_nonce"`
+	Nonce    *string        `json:"withdrawal_nonce"`
 	Sender   common.Address `json:"withdrawal_sender"`
 	Target   common.Address `json:"withdrawal_target"`
-	Value    *big.Int       `json:"withdrawal_value"`
-	GasLimit *big.Int       `json:"withdrawal_gas_limit"`
+	Value    *string        `json:"withdrawal_value"`
+	GasLimit *string        `json:"withdrawal_gas_limit"`
 	Data     hexutil.Bytes  `json:"withdrawal_data"`
 
 	TxHash         common.Hash `json:"tx_hash"`
@@ -54,8 +53,8 @@ type WithdrawalDetails struct {
 	TokenAddress *common.Address `json:"token_address,omitempty"`
 	FromAddress  *common.Address `json:"from_address,omitempty"`
 	ToAddress    *common.Address `json:"to_address,omitempty"`
-	TokenID      *big.Int        `json:"token_id,omitempty"`
-	Amount       *big.Int        `json:"amount,omitempty"`
+	TokenID      *string         `json:"token_id,omitempty"`
+	Amount       *string         `json:"amount,omitempty"`
 
 	// --- models.Token ---
 	TokenChainID  *uint64            `json:"token_chain_id,omitempty"`
@@ -124,11 +123,11 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, uint64, 
 	// If withdrawal_hash is not null, some columns are assumed to exist:
 	result.WithdrawalHash = *row.WithdrawalHash.Common()
 	result.ChainID = *row.ChainID
-	result.Nonce = row.Nonce.BigInt()
+	result.Nonce = stringPtr(row.Nonce.BigInt().String())
 	result.Sender = *row.Sender.Common()
 	result.Target = *row.Target.Common()
-	result.Value = row.Value.BigInt()
-	result.GasLimit = row.GasLimit.BigInt()
+	result.Value = stringPtr(row.Value.BigInt().String())
+	result.GasLimit = stringPtr(row.GasLimit.BigInt().String())
 	result.Data = *row.Data.Common()
 	result.TxHash = *row.TxHash.Common()
 	result.BlockNumber = *row.BlockNumber
@@ -153,8 +152,12 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, uint64, 
 		result.TokenAddress = row.TokenAddress.Common()
 		result.FromAddress = row.FromAddress.Common()
 		result.ToAddress = row.ToAddress.Common()
-		result.TokenID = row.TokenID.BigInt()
-		result.Amount = row.Amount.BigInt()
+		if row.TokenID.BigInt() != nil {
+			result.TokenID = stringPtr(row.TokenID.BigInt().String())
+		}
+		if row.Amount.BigInt() != nil {
+			result.Amount = stringPtr(row.Amount.BigInt().String())
+		}
 
 	} else {
 		result.Kind = CustomWithdrawal
@@ -194,4 +197,8 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, uint64, 
 	}
 
 	return result, row.TotalCount, nil
+}
+
+func stringPtr(val string) (ptr *string) {
+	return &val
 }
