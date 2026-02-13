@@ -29,71 +29,109 @@ func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Addre
 				FROM withdrawal_finalized_txs wft
 				WHERE wft.withdrawal_chain_id = $2
 				GROUP BY wft.withdrawal_chain_id, wft.withdrawal_hash
+			),
+			full_withdrawals_result AS (
+				SELECT
+					w.withdrawal_hash,
+					w.chain_id,
+					w.withdrawal_nonce,
+					w.withdrawal_sender,
+					w.withdrawal_target,
+					w.withdrawal_value,
+					w.withdrawal_gas_limit,
+					w.withdrawal_data,
+					w.tx_hash,
+					w.block_number,
+					w.block_timestamp,
+					wi.decoded_action AS info_decoded_action,
+					wi.token_address AS info_token_address,
+					wi.from_address AS info_from_address,
+					wi.to_address AS info_to_address,
+					wi.token_id AS info_token_id,
+					wi.amount AS info_amount,
+					t.chain_id as token_chain_id,
+					t.token_class,
+					t.token_name,
+					t.token_symbol,
+					t.token_decimals,
+					COALESCE(pf.proven, FALSE) AS proven,
+					ff.finalization_success
+
+				FROM withdrawals w
+
+				LEFT JOIN withdrawal_info wi
+					ON
+						wi.chain_id = w.chain_id
+						AND wi.withdrawal_hash = w.withdrawal_hash
+
+				LEFT JOIN tokens t
+					ON
+						t.chain_id = wi.chain_id
+						AND t.token_address = wi.token_address
+
+				LEFT JOIN proven_flags pf
+					ON
+						pf.withdrawal_chain_id = w.chain_id
+						AND pf.withdrawal_hash = w.withdrawal_hash
+
+				LEFT JOIN finalization_flags ff
+					ON
+						ff.withdrawal_chain_id = w.chain_id
+						AND ff.withdrawal_hash = w.withdrawal_hash
+
+				WHERE
+					w.chain_id = $2
+					AND (
+						w.withdrawal_sender = $1
+						OR wi.from_address = $1
+						OR pf.proved_by_user
+					)
+					AND (
+						w.block_timestamp >= $3
+						OR ff.finalization_success IS NULL
+					)
+			),
+			result AS (
+				SELECT r.*
+				FROM full_withdrawals_result r
+				ORDER BY r.block_timestamp DESC
+				LIMIT $4 OFFSET $5
+			),
+			count AS (
+				SELECT COUNT(*) as total_count
+				FROM full_withdrawals_result
 			)
 
 		SELECT
-			w.withdrawal_hash,
-			w.chain_id,
-			w.withdrawal_nonce,
-			w.withdrawal_sender,
-			w.withdrawal_target,
-			w.withdrawal_value,
-			w.withdrawal_gas_limit,
-			w.withdrawal_data,
-			w.tx_hash,
-			w.block_number,
-			w.block_timestamp,
-			wi.decoded_action AS info_decoded_action,
-			wi.token_address AS info_token_address,
-			wi.from_address AS info_from_address,
-			wi.to_address AS info_to_address,
-			wi.token_id AS info_token_id,
-			wi.amount AS info_amount,
-			t.chain_id as token_chain_id,
-			t.token_class,
-			t.token_name,
-			t.token_symbol,
-			t.token_decimals,
-			COALESCE(pf.proven, FALSE) AS proven,
-			ff.finalization_success,
-			COUNT(*) OVER() AS total_count
+			r.withdrawal_hash,
+			r.chain_id,
+			r.withdrawal_nonce,
+			r.withdrawal_sender,
+			r.withdrawal_target,
+			r.withdrawal_value,
+			r.withdrawal_gas_limit,
+			r.withdrawal_data,
+			r.tx_hash,
+			r.block_number,
+			r.block_timestamp,
+			r.info_decoded_action,
+			r.info_token_address,
+			r.info_from_address,
+			r.info_to_address,
+			r.info_token_id,
+			r.info_amount,
+			r.token_chain_id,
+			r.token_class,
+			r.token_name,
+			r.token_symbol,
+			r.token_decimals,
+			r.proven,
+			r.finalization_success,
+			c.total_count
 
-		FROM withdrawals w
-
-		LEFT JOIN withdrawal_info wi
-			ON
-				wi.chain_id = w.chain_id
-				AND wi.withdrawal_hash = w.withdrawal_hash
-
-		LEFT JOIN tokens t
-			ON
-				t.chain_id = wi.chain_id
-				AND t.token_address = wi.token_address
-
-		LEFT JOIN proven_flags pf
-			ON
-				pf.withdrawal_chain_id = w.chain_id
-				AND pf.withdrawal_hash = w.withdrawal_hash
-
-		LEFT JOIN finalization_flags ff
-			ON
-				ff.withdrawal_chain_id = w.chain_id
-				AND ff.withdrawal_hash = w.withdrawal_hash
-
-		WHERE
-			w.chain_id = $2
-			AND (
-				w.withdrawal_sender = $1
-				OR wi.from_address = $1
-				OR pf.proved_by_user
-			)
-			AND (
-				w.block_timestamp >= $3
-				OR ff.finalization_success IS NULL
-			)
-
-		ORDER BY w.block_timestamp DESC
-		LIMIT $4 OFFSET $5;
+		FROM result r
+		RIGHT JOIN count c
+		ON 1 = 1;
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, DBQueryTimeout)
@@ -114,6 +152,7 @@ func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Addre
 	defer rows.Close()
 
 	var totalCount uint64
+	var details *dbmodels.WithdrawalDetails
 	result := make([]*dbmodels.WithdrawalDetails, 0)
 
 	for rows.Next() {
@@ -143,18 +182,20 @@ func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Addre
 			&row.TokenDecimals,
 			&row.Proven,
 			&row.FinalizationSuccess,
-			&totalCount,
+			&row.TotalCount,
 		)
 		if err != nil {
 			return nil, 0, err
 		}
 
-		domainModel, err := row.ToDomainModel()
+		details, totalCount, err = row.ToDomainModel()
 		if err != nil {
 			return nil, 0, err
 		}
-
-		result = append(result, domainModel)
+		if details == nil {
+			return result, totalCount, nil
+		}
+		result = append(result, details)
 	}
 
 	if err := rows.Err(); err != nil {

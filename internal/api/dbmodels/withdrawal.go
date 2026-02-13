@@ -71,22 +71,23 @@ type WithdrawalDetails struct {
 }
 
 type WithdrawalDetailsDBRow struct {
+	TotalCount uint64
 
 	// --- models.WithdrawalDBRow ---
 
-	WithdrawalHash dbtypes.Hash
-	ChainID        uint64
+	WithdrawalHash dbtypes.NullableHash
+	ChainID        *uint64
 
-	Nonce    dbtypes.U256
-	Sender   dbtypes.Address
-	Target   dbtypes.Address
-	Value    dbtypes.U256
-	GasLimit dbtypes.U256
-	Data     dbtypes.Bytes
+	Nonce    dbtypes.NullableU256
+	Sender   dbtypes.NullableAddress
+	Target   dbtypes.NullableAddress
+	Value    dbtypes.NullableU256
+	GasLimit dbtypes.NullableU256
+	Data     dbtypes.NullableBytes
 
-	TxHash         dbtypes.Hash
-	BlockNumber    uint64
-	BlockTimestamp uint64
+	TxHash         dbtypes.NullableHash
+	BlockNumber    *uint64
+	BlockTimestamp *uint64
 
 	// --- models.WithdrawalInformationDBRow ---
 
@@ -108,24 +109,30 @@ type WithdrawalDetailsDBRow struct {
 
 	// --- extra fields ---
 
-	Proven              bool
+	Proven              *bool
 	FinalizationSuccess *bool
 }
 
-func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, error) {
+func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, uint64, error) {
+
+	if row.WithdrawalHash.Common() == nil {
+		return nil, row.TotalCount, nil
+	}
+
 	result := new(WithdrawalDetails)
 
-	result.WithdrawalHash = row.WithdrawalHash.Common()
-	result.ChainID = row.ChainID
+	// If withdrawal_hash is not null, some columns are assumed to exist:
+	result.WithdrawalHash = *row.WithdrawalHash.Common()
+	result.ChainID = *row.ChainID
 	result.Nonce = row.Nonce.BigInt()
-	result.Sender = row.Sender.Common()
-	result.Target = row.Target.Common()
+	result.Sender = *row.Sender.Common()
+	result.Target = *row.Target.Common()
 	result.Value = row.Value.BigInt()
 	result.GasLimit = row.GasLimit.BigInt()
-	result.Data = row.Data.HexUtilBytes()
-	result.TxHash = row.TxHash.Common()
-	result.BlockNumber = row.BlockNumber
-	result.BlockTimestamp = row.BlockTimestamp
+	result.Data = *row.Data.HexUtilBytes()
+	result.TxHash = *row.TxHash.Common()
+	result.BlockNumber = *row.BlockNumber
+	result.BlockTimestamp = *row.BlockTimestamp
 
 	if row.DecodedAction != nil {
 
@@ -139,7 +146,7 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, error) {
 		case string(models.ERC1155TransferAction):
 			result.Kind = ERC1155Withdrawal
 		default:
-			return nil, fmt.Errorf("unrecognized withdrawal action %s", *row.DecodedAction)
+			return nil, 0, fmt.Errorf("unrecognized withdrawal action %s", *row.DecodedAction)
 		}
 
 		result.DecodedAction = row.DecodedAction
@@ -164,7 +171,7 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, error) {
 		case string(models.ERC1155Token):
 			tokenClass = models.ERC1155Token
 		default:
-			return nil, fmt.Errorf("unrecognized token class %s", *row.TokenClass)
+			return nil, 0, fmt.Errorf("unrecognized token class %s", *row.TokenClass)
 		}
 
 		result.TokenChainID = row.TokenChainID
@@ -180,11 +187,11 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, error) {
 		} else {
 			result.Status = WithdrawalFinalizedFail
 		}
-	} else if row.Proven {
+	} else if row.Proven != nil && *row.Proven == true {
 		result.Status = WithdrawalProven
 	} else {
 		result.Status = WithdrawalInitiated
 	}
 
-	return result, nil
+	return result, row.TotalCount, nil
 }
