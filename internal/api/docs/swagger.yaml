@@ -110,8 +110,6 @@ paths:
       - application/json
       description: |-
         Returns a list of withdrawals of a chain id initiated by an Ethereum address or proven by it.
-        All withdrawals are fetched which are no older than 90 days.
-        Only non-finalized withdrawals older than that are fetched.
         Withdrawals are fetched in latest-first order.
         Paginated query, with batches of 25.
       parameters:

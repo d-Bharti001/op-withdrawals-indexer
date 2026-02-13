@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Address, chainID, sinceTimestamp, limit, offset uint64) ([]*dbmodels.WithdrawalDetails, uint64, error) {
+func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Address, chainID, limit, offset uint64) ([]*dbmodels.WithdrawalDetails, uint64, error) {
 	query := `
 		WITH
 			proven_flags AS (
@@ -86,16 +86,12 @@ func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Addre
 						OR wi.from_address = $1
 						OR pf.proved_by_user
 					)
-					AND (
-						w.block_timestamp >= $3
-						OR ff.finalization_success IS NULL
-					)
 			),
 			result AS (
 				SELECT r.*
 				FROM full_withdrawals_result r
 				ORDER BY r.block_timestamp DESC
-				LIMIT $4 OFFSET $5
+				LIMIT $3 OFFSET $4
 			),
 			count AS (
 				SELECT COUNT(*) as total_count
@@ -142,7 +138,6 @@ func (s *PostgresStore) WithdrawalHistory(ctx context.Context, addr common.Addre
 		query,
 		dbtypes.Address(addr),
 		chainID,
-		sinceTimestamp,
 		limit,
 		offset,
 	)

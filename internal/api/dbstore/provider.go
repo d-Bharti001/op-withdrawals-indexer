@@ -12,7 +12,6 @@ type DBStoreProvider interface {
 		ctx context.Context,
 		addr common.Address,
 		chainID,
-		sinceTimestamp,
 		limit,
 		offset uint64,
 	) (

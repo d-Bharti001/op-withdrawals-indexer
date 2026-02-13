@@ -3,7 +3,6 @@ package withdrawals
 import (
 	"net/http"
 	"strconv"
-	"time"
 
 	"op-withdrawals-indexer/internal/api/dbmodels"
 	"op-withdrawals-indexer/internal/api/handlers/response"
@@ -59,8 +58,6 @@ type WithdrawalHistoryResponse struct {
 //
 //	@Summary		Get withdrawals history related to an address
 //	@Description	Returns a list of withdrawals of a chain id initiated by an Ethereum address or proven by it.
-//	@Description	All withdrawals are fetched which are no older than 90 days.
-//	@Description	Only non-finalized withdrawals older than that are fetched.
 //	@Description	Withdrawals are fetched in latest-first order.
 //	@Description	Paginated query, with batches of 25.
 //
@@ -109,10 +106,6 @@ func (h *WithdrawalsHandler) GetWithdrawalHistory(w http.ResponseWriter, r *http
 
 	chainID := uint64(chainIDInt)
 
-	currentTime := time.Now()
-	ninetyDays := 90 * 24 * time.Hour
-	sinceTime := currentTime.Add(-ninetyDays)
-
 	limit := 25
 	offset := limit * (page - 1)
 
@@ -120,7 +113,6 @@ func (h *WithdrawalsHandler) GetWithdrawalHistory(w http.ResponseWriter, r *http
 		r.Context(),
 		addr,
 		chainID,
-		uint64(sinceTime.Unix()),
 		uint64(limit),
 		uint64(offset),
 	)
