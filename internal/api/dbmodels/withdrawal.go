@@ -143,7 +143,7 @@ func (row *WithdrawalDetailsDBRow) ToDomainModel() (*WithdrawalDetails, error) {
 		}
 
 		result.DecodedAction = row.DecodedAction
-		result.TokenAddress = row.TokenAddress.Val
+		result.TokenAddress = row.TokenAddress.Common()
 		result.FromAddress = row.FromAddress.Common()
 		result.ToAddress = row.ToAddress.Common()
 		result.TokenID = row.TokenID.BigInt()
