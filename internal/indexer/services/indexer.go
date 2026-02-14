@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 
 	"op-withdrawals-indexer/internal/database/models"
 	"op-withdrawals-indexer/internal/decoder"
@@ -29,6 +30,17 @@ type IndexerApp struct {
 }
 
 func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error) {
+
+	l1PollingInterval, err := time.ParseDuration(cfg.L1PollingInterval)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse l1 polling interval: %w", err)
+	}
+
+	l2PollingInterval, err := time.ParseDuration(cfg.L2PollingInterval)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse l2 polling interval: %w", err)
+	}
+
 	ctx, cancel := context.WithCancel(ctx)
 
 	l1Chain, err := blockchain.NewL1Chain(ctx, blockchain.L1ChainInitConfig{
@@ -100,7 +112,7 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 			minBlockToConsider:        minL1BlockNumber,
 			blockScanBatchSizeLimit:   cfg.L1BlockScanBatchSizeLimit,
 			unstableBlocksDepth:       cfg.L1UnstableBlocksDepth,
-			pollingInterval:           DefaultL1PollingInterval,
+			pollingInterval:           l1PollingInterval,
 			chainIndexerStateTableKey: fmt.Sprintf("%d:%d", cfg.L2ChainID, cfg.L1ChainID),
 		},
 		l2Scanner: L2Scanner{
@@ -108,7 +120,7 @@ func NewIndexer(ctx context.Context, cfg IndexerInitConfig) (*IndexerApp, error)
 			evtDecoder:                *evtDecoder,
 			blockScanBatchSizeLimit:   cfg.L2BlockScanBatchSizeLimit,
 			unstableBlocksDepth:       cfg.L2UnstableBlocksDepth,
-			pollingInterval:           DefaultL2PollingInterval,
+			pollingInterval:           l2PollingInterval,
 			chainIndexerStateTableKey: fmt.Sprintf("%d", cfg.L2ChainID),
 		},
 	}

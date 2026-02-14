@@ -34,6 +34,14 @@ var appFlags []cli.Flag = []cli.Flag{
 		Sources:     cli.EnvVars("L1_CHAIN_NAME"),
 		Destination: &appConfig.L1ChainName,
 	},
+	&cli.StringFlag{
+		Name:        "l1PollingInterval",
+		Usage:       "L1 chain polling interval",
+		Sources:     cli.EnvVars("L1_POLLING_INTERVAL"),
+		Value:       indexer.DefaultL1PollingInterval,
+		DefaultText: indexer.DefaultL1PollingInterval,
+		Destination: &appConfig.L1PollingInterval,
+	},
 	&cli.Uint64Flag{
 		Name:        "l1UnstableBlocksDepth",
 		Usage:       "Number of blocks on the L1 chain, counted backwards from the latest block, that can be assumed to change state after being scanned. For depth = 0, only the nth scanned block is considered unstable. For depth = 1, nth and (n-1)th blocks are in the unstable range.",
@@ -70,6 +78,14 @@ var appFlags []cli.Flag = []cli.Flag{
 		Required:    true,
 		Sources:     cli.EnvVars("L2_CHAIN_NAME"),
 		Destination: &appConfig.L2ChainName,
+	},
+	&cli.StringFlag{
+		Name:        "l2PollingInterval",
+		Usage:       "L2 chain polling interval",
+		Sources:     cli.EnvVars("L2_POLLING_INTERVAL"),
+		Value:       indexer.DefaultL2PollingInterval,
+		DefaultText: indexer.DefaultL2PollingInterval,
+		Destination: &appConfig.L2PollingInterval,
 	},
 	&cli.Uint64Flag{
 		Name:        "l2UnstableBlocksDepth",
