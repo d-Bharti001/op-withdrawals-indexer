@@ -92,6 +92,21 @@ The project provides `.env.sample` which contains the environment variables need
 After building the executables (available in `./bin/`), they can be run as systemd services.  
 See the service files located in `./systemd-services/` for details.
 
+## Bridge Frontend
+
+The `web/` subdirectory is a git submodule which points to another git repo `https://github.com/d-Bharti001/op-bridge-frontend.git`.  
+The frontend application, based on **ReactJS**, is compatible with this **Golang** backend, and provides an interface for:
+* deposits
+* withdrawal initiation
+* withdrawal management (i.e. proving and finalization)
+
+Initialize the module with:
+```sh
+git submodule update --init --recursive
+```
+
+Then go through its README (`web/README.md`) for steps for installation and deployment.
+
 ## References
 
 * [Optimism Legacy Indexer](https://github.com/ethereum-optimism/optimism-legacy/tree/develop/indexer)
