@@ -35,7 +35,8 @@ List of APIs:
     Get withdrawals history related to an address
 
 Swagger documentation:
-* Run the program locally, and visit `http://localhost:<HTTP_PORT>/swagger/` to test the API service.
+* Swagger docs are available at the endpoint `docs/` [GET]
+* To test the API service locally, run the program and visit `http://localhost:<HTTP_PORT>/docs/`.
 
 ## Running the services with env
 

@@ -74,8 +74,8 @@ func NewAPIService(ctx context.Context, cfg APIInitConfig) (*APIService, error) 
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	// Swagger docs
-	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL(fmt.Sprintf("http://localhost:%s/swagger/doc.json", cfg.HTTPPort)),
+	r.Get("/docs/*", httpSwagger.Handler(
+		httpSwagger.URL("./swagger/doc.json"),
 	))
 
 	withdrawalsHandler := withdrawals.NewWithdrawalsHandler(db)
