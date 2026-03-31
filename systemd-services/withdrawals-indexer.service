@@ -1,5 +1,5 @@
 [Unit]
-Description=OP Withdrawals Indexer Service
+Description=OP Sepolia Withdrawals Indexer Service
 After=network-online.target
 Wants=network-online.target
 
@@ -10,9 +10,9 @@ RestartSec=30s
 StartLimitIntervalSec=300
 StartLimitBurst=5
 
-WorkingDirectory=/path/to/project_root
-EnvironmentFile=/path/to/project_root/.env
-ExecStart=/path/to/project_root/bin/indexer
+WorkingDirectory=/home/d_bharti/op-sepolia-bridge/backend
+EnvironmentFile=/home/d_bharti/op-sepolia-bridge/backend/.env
+ExecStart=/home/d_bharti/op-sepolia-bridge/backend/bin/indexer
 
 TimeoutStopSec=120s
 
