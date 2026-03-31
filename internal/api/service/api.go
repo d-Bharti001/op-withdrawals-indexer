@@ -101,9 +101,9 @@ func NewAPIService(ctx context.Context, cfg APIInitConfig) (*APIService, error) 
 func (app *APIService) Start() error {
 
 	// Swagger docs configuration
-	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", app.port)
+	// docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", app.port)
 	docs.SwaggerInfo.BasePath = "/"
-	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	docs.SwaggerInfo.Schemes = []string{"https"}
 
 	app.wg.Add(1)
 	go func() {
